@@ -1,0 +1,55 @@
+import { readFile, appendFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { pathExists } from "./fs.js";
+import { getPackageRoot } from "./paths.js";
+
+const MARKER_START = "# >>> spec-protocol-cli";
+const MARKER_END = "# <<< spec-protocol-cli";
+
+function buildSnippet(): string {
+  return [
+    MARKER_START,
+    "# AI Spec Protocol (spec-protocol-cli)",
+    ".spec-protocol/exports/",
+    "# Descomente para ignorar todo o protocolo (incl. respostas da IA):",
+    "# .spec-protocol/",
+    MARKER_END,
+    "",
+  ].join("\n");
+}
+
+export async function updateGitignore(
+  cwd: string = process.cwd(),
+  skip = false,
+): Promise<"skipped" | "created" | "appended" | "already-configured"> {
+  if (skip) return "skipped";
+
+  const gitignorePath = join(cwd, ".gitignore");
+
+  if (!(await pathExists(gitignorePath))) {
+    const header = [
+      "# Gerado por spec-protocol-cli",
+      "# Edite conforme necessário",
+      "",
+      buildSnippet(),
+    ].join("\n");
+    await writeFile(gitignorePath, header, "utf-8");
+    return "created";
+  }
+
+  const content = await readFile(gitignorePath, "utf-8");
+
+  // Já tem os marcadores (idempotência)
+  if (content.includes(MARKER_START)) return "already-configured";
+
+  // Já menciona .spec-protocol de outra forma — apenas avisa
+  if (content.includes(".spec-protocol")) return "already-configured";
+
+  await appendFile(gitignorePath, `\n${buildSnippet()}`, "utf-8");
+  return "appended";
+}
+
+/** Lê o snippet de gitignore do diretório de templates do pacote */
+export async function getGitignoreSnippetPath(): Promise<string> {
+  return join(getPackageRoot(), "templates", "gitignore-snippet.txt");
+}

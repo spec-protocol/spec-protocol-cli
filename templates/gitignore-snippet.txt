@@ -1,0 +1,4 @@
+# AI Spec Protocol (spec-protocol-cli)
+.spec-protocol/exports/
+# Descomente para ignorar todo o protocolo (incl. respostas da IA):
+# .spec-protocol/

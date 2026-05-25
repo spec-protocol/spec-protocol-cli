@@ -1,0 +1,57 @@
+{
+  "name": "spec-protocol-cli",
+  "version": "0.1.0",
+  "description": "CLI do AI Spec Protocol — especificação assistida por IA antes do SDD",
+  "type": "module",
+  "bin": {
+    "spec-protocol": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "spec-protocol",
+    "aisp",
+    "spec-driven-development",
+    "spec-kit",
+    "ai-spec",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "spec-protocol",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spec-protocol/spec-protocol-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spec-protocol/spec-protocol-cli/issues"
+  },
+  "homepage": "https://github.com/spec-protocol/spec-protocol-cli#readme",
+  "dependencies": {
+    "@inquirer/prompts": "^7.5.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "figlet": "^1.8.0",
+    "gradient-string": "^3.0.0",
+    "string-width": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^22.15.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  }
+}
