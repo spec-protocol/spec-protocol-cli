@@ -8,7 +8,13 @@ import {
   type ArtifactStatus,
 } from "../lib/task-progress.js";
 import { pathExists } from "../lib/fs.js";
-import { DEFAULT_LANGUAGE, getArtifactLabel } from "../lib/i18n.js";
+import {
+  DEFAULT_LANGUAGE,
+  getArtifactLabel,
+  getStatusLabels,
+  type StatusLabels,
+  type SupportedLanguage,
+} from "../lib/i18n.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
@@ -30,36 +36,37 @@ export async function runStatus(
 
   const config = await readConfig(cwd);
   const language = config?.language ?? DEFAULT_LANGUAGE;
+  const labels = getStatusLabels(language);
   const infos = await getAllArtifactInfos(taskDir);
   const completedCount = infos.filter((i) => i.status === "OK").length;
 
   console.log("");
   console.log(
-    chalk.bold.cyan(`  Tarefa: ${taskId}`) +
-      chalk.gray(`  (${completedCount}/${ARTIFACTS.length} artefatos OK)`),
+    chalk.bold.cyan(`  ${labels.taskHeader(taskId, completedCount, ARTIFACTS.length)}`),
   );
   console.log(chalk.gray("  " + "─".repeat(60)));
   console.log("");
 
   for (const info of infos) {
-    printArtifactRow(info, cwd, language);
+    printArtifactRow(info, cwd, language, labels);
   }
 
   console.log("");
-  printNextAction(infos, taskId);
+  printNextAction(infos, taskId, labels);
   console.log("");
 }
 
 function printArtifactRow(
   info: ArtifactInfo,
   cwd: string,
-  language: typeof DEFAULT_LANGUAGE,
+  language: SupportedLanguage,
+  labels: StatusLabels,
 ): void {
   const { artifact, status, path } = info;
   const icon = statusIcon(status);
-  const label = statusLabel(status);
+  const label = statusLabel(status, labels);
   const relPath = path.replace(cwd + "/", "");
-  const critical = artifact.critical ? chalk.gray(" [crítico]") : "";
+  const critical = artifact.critical ? chalk.gray(labels.criticalBadge) : "";
   const artifactLabel = getArtifactLabel(artifact.id, language);
 
   console.log(
@@ -75,33 +82,39 @@ function statusIcon(s: ArtifactStatus): string {
   return chalk.red("✗");
 }
 
-function statusLabel(s: ArtifactStatus): string {
-  if (s === "OK") return chalk.green("[OK]");
-  if (s === "RASCUNHO") return chalk.yellow("[RASCUNHO]");
-  return chalk.gray("[PENDENTE]");
+function statusLabel(s: ArtifactStatus, labels: StatusLabels): string {
+  if (s === "OK") return chalk.green(labels.statusOk);
+  if (s === "RASCUNHO") return chalk.yellow(labels.statusDraft);
+  return chalk.gray(labels.statusPending);
 }
 
-function printNextAction(infos: ArtifactInfo[], taskId: string): void {
+function printNextAction(
+  infos: ArtifactInfo[],
+  taskId: string,
+  labels: StatusLabels,
+): void {
   const next = infos.find((i) => i.status !== "OK");
 
   if (!next) {
-    console.log(chalk.green("  ✓ Todos os artefatos preenchidos!"));
-    console.log(
-      chalk.gray(`    Próximo passo: spec-protocol validate ${taskId}`),
-    );
+    console.log(chalk.green(`  ${labels.allFilled}`));
+    console.log(chalk.gray(`    ${labels.nextValidate(taskId)}`));
     return;
   }
 
-  console.log(chalk.yellow(`  → Próxima ação:`));
+  console.log(chalk.yellow(`  ${labels.nextActionTitle}`));
   console.log(
     chalk.white(
-      `    ${next.artifact.file} ${next.status === "RASCUNHO" ? "(rascunho)" : "pendente"} — refine na IDE com skills RTA`,
+      `    ${
+        next.status === "RASCUNHO"
+          ? labels.nextActionDraft(next.artifact.file)
+          : labels.nextActionPending(next.artifact.file)
+      }`,
     ),
   );
   console.log(
     chalk.cyan(`    .spec-protocol/tasks/${taskId}/${next.artifact.file}`),
   );
   console.log(
-    chalk.gray(`    Guia: @rta-triagem  |  Abrir: spec-protocol open ${taskId}`),
+    chalk.gray(`    ${labels.refineHint} ${labels.openHint(taskId)}`),
   );
 }

@@ -2,7 +2,12 @@ import chalk from "chalk";
 import { input, select } from "@inquirer/prompts";
 import { printBanner } from "../banner.js";
 import { IDE_OPTIONS, LEGACY_PROTOCOL_DIR } from "../constants.js";
-import { defaultConfig, readConfig, writeConfig } from "../lib/config.js";
+import {
+  defaultConfig,
+  ensureConfigLanguage,
+  readConfig,
+  writeConfig,
+} from "../lib/config.js";
 import { join } from "node:path";
 import { ensureDir, pathExists } from "../lib/fs.js";
 import { getProtocolRoot } from "../lib/paths.js";
@@ -85,6 +90,20 @@ export async function runInit(
   await ensureDir(`${protocolRoot}/tasks`);
   await ensureDir(`${protocolRoot}/exports`);
 
+  const backfill = await ensureConfigLanguage(cwd);
+  if (backfill?.changed) {
+    config = await readConfig(cwd);
+    console.log(
+      chalk.yellow(
+        `⚠ config.json: language normalizado para ${chalk.bold(backfill.language)}` +
+          (backfill.previous !== undefined
+            ? ` (era: ${JSON.stringify(backfill.previous)})`
+            : " (campo ausente)"),
+      ),
+    );
+    console.log("");
+  }
+
   const language = config?.language ?? DEFAULT_LANGUAGE;
   const skillResult = await installRtaSkills(cwd, language);
   if (skillResult.installed.length > 0) {
@@ -94,10 +113,17 @@ export async function runInit(
       ),
     );
   }
+  if (skillResult.updated.length > 0) {
+    console.log(
+      chalk.green(
+        `✓ Skills RTA atualizadas (idioma): ${skillResult.updated.join(", ")}`,
+      ),
+    );
+  }
   if (skillResult.skipped.length > 0) {
     console.log(
       chalk.gray(
-        `  Skills já presentes (não sobrescritas): ${skillResult.skipped.join(", ")}`,
+        `  Skills já presentes (sem alteração): ${skillResult.skipped.join(", ")}`,
       ),
     );
   }

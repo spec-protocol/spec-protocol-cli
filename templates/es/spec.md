@@ -20,7 +20,7 @@
 
 ## Hallazgos clasificados
 
-<!-- Use [CRÍTICO], [RISCO], [HIPÓTESE] o [OBSERVAÇÃO], siempre con evidencia cuando exista -->
+<!-- Tags RTA siempre en portugués: [CRÍTICO], [RISCO], [HIPÓTESE], [OBSERVAÇÃO] — con evidencia cuando exista -->
 
 ## Hipótesis planteadas [HIPÓTESE]
 
@@ -36,7 +36,7 @@
 
 ## Decisiones pendientes
 
-<!-- Decisiones de negocio o técnicas que bloquean o cambian el alcance. Use [CRÍTICO], [RISCO], [HIPÓTESE] o [OBSERVAÇÃO]. -->
+<!-- Tags RTA en portugués: [CRÍTICO], [RISCO], [HIPÓTESE], [OBSERVAÇÃO]. Decisiones que bloquean o cambian el alcance. -->
 
 ## Decisiones confirmadas
 

@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { RTA_SKILL_DIRS } from "../constants.js";
 import {
   DEFAULT_LANGUAGE,
-  injectSkillLanguageInstruction,
+  upsertSkillLanguageInstruction,
   type SupportedLanguage,
 } from "./i18n.js";
 import { copyDirRecursive, pathExists, readTextFile, writeTextFile } from "./fs.js";
@@ -10,6 +10,7 @@ import { getAgentsSkillsDir, getSkillPackDir } from "./paths.js";
 
 export interface SkillInstallResult {
   installed: string[];
+  updated: string[];
   skipped: string[];
   missing: string[];
 }
@@ -23,6 +24,7 @@ export async function installRtaSkills(
   const targetSkillsDir = getAgentsSkillsDir(cwd);
   const result: SkillInstallResult = {
     installed: [],
+    updated: [],
     skipped: [],
     missing: [],
   };
@@ -41,23 +43,31 @@ export async function installRtaSkills(
     }
 
     const skillFile = join(target, "SKILL.md");
-    if (await pathExists(skillFile)) {
-      result.skipped.push(skillDir);
+    const existedBefore = await pathExists(skillFile);
+
+    if (!existedBefore) {
+      await copyDirRecursive(source, target);
+      result.installed.push(skillDir);
+    }
+
+    if (!(await pathExists(skillFile))) {
       continue;
     }
 
-    await copyDirRecursive(source, target);
-
-    const installedSkill = await readTextFile(skillFile);
-    const localizedSkill = injectSkillLanguageInstruction(
-      installedSkill,
+    const currentSkill = await readTextFile(skillFile);
+    const localizedSkill = upsertSkillLanguageInstruction(
+      currentSkill,
       language,
     );
-    if (localizedSkill !== installedSkill) {
-      await writeTextFile(skillFile, localizedSkill);
-    }
 
-    result.installed.push(skillDir);
+    if (localizedSkill !== currentSkill) {
+      await writeTextFile(skillFile, localizedSkill);
+      if (existedBefore) {
+        result.updated.push(skillDir);
+      }
+    } else if (existedBefore) {
+      result.skipped.push(skillDir);
+    }
   }
 
   return result;

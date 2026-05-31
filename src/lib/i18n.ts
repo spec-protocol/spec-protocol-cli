@@ -17,6 +17,29 @@ export const LANGUAGE_PROMPT_OPTIONS = [
   { name: "Español", value: "es" as const },
 ];
 
+/** Regex para tag [CRÍTICO] pendente (alias [CRITICAL] aceito no validate). */
+export const DECISION_TAGS = {
+  CRITICAL: /\[CRÍTICO\]|\[CRITICAL\]/i,
+} as const;
+
+/** Substrings esperadas na seção de exceção do plan.md. */
+export const EXCEPTION_CHECKS = {
+  owner:
+    /respons[aá]vel|responsible|responsable|decision owner|propietario|dueño/i,
+  risks: /risco|risk|riesgo/i,
+} as const;
+
+const LANGUAGE_ALIASES: Record<string, SupportedLanguage> = {
+  "pt-br": "pt-BR",
+  pt: "pt-BR",
+  en: "en",
+  "en-us": "en",
+  "en-gb": "en",
+  es: "es",
+  "es-es": "es",
+  "es-mx": "es",
+};
+
 export type SectionKey =
   | "spec.classification"
   | "spec.objective"
@@ -296,11 +319,284 @@ const CONTEXT_LABELS: Record<
   },
 };
 
+export type ValidateLabels = {
+  artifactCritical: (file: string, label: string, status: string) => string;
+  artifactRecommended: (file: string, label: string, status: string) => string;
+  specNoWorkType: string;
+  specNoRiskLevel: string;
+  specNoObjective: string;
+  specNoReadinessStatus: string;
+  specExceptionNoDecisions: string;
+  specReadyWithCriticalPending: string;
+  planNoFinalStatus: string;
+  planNoValidatedInputs: string;
+  planNoAcceptanceCriteria: string;
+  planNoExceptionMode: string;
+  planExceptionNoOwner: string;
+  planExceptionNoRisks: string;
+  successTitle: (taskId: string) => string;
+  readyForExport: (taskId: string) => string;
+  blocksTitle: (taskId: string, count: number) => string;
+  warningsTitle: (count: number) => string;
+  seeProgress: (taskId: string) => string;
+  ideHint: string;
+};
+
+export type StatusLabels = {
+  taskHeader: (taskId: string, completed: number, total: number) => string;
+  criticalBadge: string;
+  statusOk: string;
+  statusDraft: string;
+  statusPending: string;
+  allFilled: string;
+  nextValidate: (taskId: string) => string;
+  nextActionTitle: string;
+  nextActionDraft: (file: string) => string;
+  nextActionPending: (file: string) => string;
+  refineHint: string;
+  openHint: (taskId: string) => string;
+};
+
+export type ListLabels = {
+  headerId: string;
+  headerCreated: string;
+  headerProgress: string;
+  headerArtifacts: string;
+  empty: string;
+  emptyHint: string;
+  taskCount: (count: number) => string;
+  detailsHint: string;
+};
+
+const VALIDATE_LABELS: Record<SupportedLanguage, ValidateLabels> = {
+  "pt-BR": {
+    artifactCritical: (file, label, status) =>
+      `${file} (${label}) está ${status} — obrigatório para export`,
+    artifactRecommended: (file, label, status) =>
+      `${file} (${label}) está ${status} — recomendado`,
+    specNoWorkType: "spec.md sem tipo de trabalho preenchido",
+    specNoRiskLevel: "spec.md sem nível de risco preenchido",
+    specNoObjective: "spec.md sem objetivo preenchido",
+    specNoReadinessStatus: "spec.md sem status de prontidão preenchido",
+    specExceptionNoDecisions:
+      "spec.md com EXCEÇÃO APROVADA sem decisões confirmadas",
+    specReadyWithCriticalPending:
+      "spec.md está PRONTO, mas ainda contém decisão [CRÍTICO] pendente",
+    planNoFinalStatus: "plan.md sem status em Decisão final",
+    planNoValidatedInputs: "plan.md sem insumos validados",
+    planNoAcceptanceCriteria: "plan.md sem critérios de aceite finais",
+    planNoExceptionMode:
+      "plan.md sem modo de exceção apesar de spec.md estar EXCEÇÃO APROVADA",
+    planExceptionNoOwner: "plan.md em exceção sem responsável pela decisão",
+    planExceptionNoRisks: "plan.md em exceção sem riscos aceitos",
+    successTitle: (taskId) => `✓ ${taskId} — artefatos críticos preenchidos`,
+    readyForExport: (taskId) =>
+      `Pronto para: spec-protocol export ${taskId}`,
+    blocksTitle: (taskId, count) => `✗ ${taskId} — ${count} bloqueio(s):`,
+    warningsTitle: (count) => `⚠ Avisos (${count}):`,
+    seeProgress: (taskId) =>
+      `Veja o progresso: spec-protocol status ${taskId}`,
+    ideHint: "Na IDE: @rta-triagem",
+  },
+  en: {
+    artifactCritical: (file, label, status) =>
+      `${file} (${label}) is ${status} — required for export`,
+    artifactRecommended: (file, label, status) =>
+      `${file} (${label}) is ${status} — recommended`,
+    specNoWorkType: "spec.md missing work type",
+    specNoRiskLevel: "spec.md missing risk level",
+    specNoObjective: "spec.md missing objective",
+    specNoReadinessStatus: "spec.md missing readiness status",
+    specExceptionNoDecisions:
+      "spec.md has EXCEPTION APPROVED without confirmed decisions",
+    specReadyWithCriticalPending:
+      "spec.md is READY but still has pending [CRÍTICO] decision",
+    planNoFinalStatus: "plan.md missing status in Final decision",
+    planNoValidatedInputs: "plan.md missing validated inputs",
+    planNoAcceptanceCriteria: "plan.md missing final acceptance criteria",
+    planNoExceptionMode:
+      "plan.md missing exception mode while spec.md is EXCEPTION APPROVED",
+    planExceptionNoOwner: "plan.md exception missing decision owner",
+    planExceptionNoRisks: "plan.md exception missing accepted risks",
+    successTitle: (taskId) => `✓ ${taskId} — critical artifacts filled`,
+    readyForExport: (taskId) => `Ready for: spec-protocol export ${taskId}`,
+    blocksTitle: (taskId, count) => `✗ ${taskId} — ${count} blocking issue(s):`,
+    warningsTitle: (count) => `⚠ Warnings (${count}):`,
+    seeProgress: (taskId) => `See progress: spec-protocol status ${taskId}`,
+    ideHint: "In IDE: @rta-triagem",
+  },
+  es: {
+    artifactCritical: (file, label, status) =>
+      `${file} (${label}) está ${status} — obligatorio para export`,
+    artifactRecommended: (file, label, status) =>
+      `${file} (${label}) está ${status} — recomendado`,
+    specNoWorkType: "spec.md sin tipo de trabajo completado",
+    specNoRiskLevel: "spec.md sin nivel de riesgo completado",
+    specNoObjective: "spec.md sin objetivo completado",
+    specNoReadinessStatus: "spec.md sin estado de preparación completado",
+    specExceptionNoDecisions:
+      "spec.md con EXCEPCIÓN APROBADA sin decisiones confirmadas",
+    specReadyWithCriticalPending:
+      "spec.md está LISTO pero aún tiene decisión [CRÍTICO] pendiente",
+    planNoFinalStatus: "plan.md sin estado en Decisión final",
+    planNoValidatedInputs: "plan.md sin insumos validados",
+    planNoAcceptanceCriteria: "plan.md sin criterios de aceptación finales",
+    planNoExceptionMode:
+      "plan.md sin modo de excepción aunque spec.md está EXCEPCIÓN APROBADA",
+    planExceptionNoOwner:
+      "plan.md en excepción sin responsable de la decisión",
+    planExceptionNoRisks: "plan.md en excepción sin riesgos aceptados",
+    successTitle: (taskId) => `✓ ${taskId} — artefactos críticos completos`,
+    readyForExport: (taskId) =>
+      `Listo para: spec-protocol export ${taskId}`,
+    blocksTitle: (taskId, count) => `✗ ${taskId} — ${count} bloqueo(s):`,
+    warningsTitle: (count) => `⚠ Avisos (${count}):`,
+    seeProgress: (taskId) =>
+      `Ver progreso: spec-protocol status ${taskId}`,
+    ideHint: "En la IDE: @rta-triagem",
+  },
+};
+
+const STATUS_LABELS: Record<SupportedLanguage, StatusLabels> = {
+  "pt-BR": {
+    taskHeader: (taskId, completed, total) =>
+      `Tarefa: ${taskId}  (${completed}/${total} artefatos OK)`,
+    criticalBadge: " [crítico]",
+    statusOk: "[OK]",
+    statusDraft: "[RASCUNHO]",
+    statusPending: "[PENDENTE]",
+    allFilled: "✓ Todos os artefatos preenchidos!",
+    nextValidate: (taskId) =>
+      `Próximo passo: spec-protocol validate ${taskId}`,
+    nextActionTitle: "→ Próxima ação:",
+    nextActionDraft: (file) =>
+      `${file} (rascunho) — refine na IDE com skills RTA`,
+    nextActionPending: (file) =>
+      `${file} pendente — refine na IDE com skills RTA`,
+    refineHint: "Guia: @rta-triagem  |  Abrir: spec-protocol open",
+    openHint: (taskId) => `spec-protocol open ${taskId}`,
+  },
+  en: {
+    taskHeader: (taskId, completed, total) =>
+      `Task: ${taskId}  (${completed}/${total} artifacts OK)`,
+    criticalBadge: " [critical]",
+    statusOk: "[OK]",
+    statusDraft: "[DRAFT]",
+    statusPending: "[PENDING]",
+    allFilled: "✓ All artifacts filled!",
+    nextValidate: (taskId) => `Next step: spec-protocol validate ${taskId}`,
+    nextActionTitle: "→ Next action:",
+    nextActionDraft: (file) =>
+      `${file} (draft) — refine in IDE with RTA skills`,
+    nextActionPending: (file) =>
+      `${file} pending — refine in IDE with RTA skills`,
+    refineHint: "Guide: @rta-triagem  |  Open: spec-protocol open",
+    openHint: (taskId) => `spec-protocol open ${taskId}`,
+  },
+  es: {
+    taskHeader: (taskId, completed, total) =>
+      `Tarea: ${taskId}  (${completed}/${total} artefactos OK)`,
+    criticalBadge: " [crítico]",
+    statusOk: "[OK]",
+    statusDraft: "[BORRADOR]",
+    statusPending: "[PENDIENTE]",
+    allFilled: "✓ ¡Todos los artefactos completados!",
+    nextValidate: (taskId) =>
+      `Próximo paso: spec-protocol validate ${taskId}`,
+    nextActionTitle: "→ Próxima acción:",
+    nextActionDraft: (file) =>
+      `${file} (borrador) — refine en la IDE con skills RTA`,
+    nextActionPending: (file) =>
+      `${file} pendiente — refine en la IDE con skills RTA`,
+    refineHint: "Guía: @rta-triagem  |  Abrir: spec-protocol open",
+    openHint: (taskId) => `spec-protocol open ${taskId}`,
+  },
+};
+
+const LIST_LABELS: Record<SupportedLanguage, ListLabels> = {
+  "pt-BR": {
+    headerId: "ID",
+    headerCreated: "Criada em",
+    headerProgress: "Progresso",
+    headerArtifacts: "Artefatos",
+    empty: "Nenhuma tarefa encontrada.",
+    emptyHint: "Crie uma com: spec-protocol new <ID-DA-TAREFA>",
+    taskCount: (count) => `${count} tarefa(s) encontrada(s).`,
+    detailsHint: "Detalhes: spec-protocol status <ID>",
+  },
+  en: {
+    headerId: "ID",
+    headerCreated: "Created",
+    headerProgress: "Progress",
+    headerArtifacts: "Artifacts",
+    empty: "No tasks found.",
+    emptyHint: "Create one with: spec-protocol new <TASK-ID>",
+    taskCount: (count) => `${count} task(s) found.`,
+    detailsHint: "Details: spec-protocol status <ID>",
+  },
+  es: {
+    headerId: "ID",
+    headerCreated: "Creada",
+    headerProgress: "Progreso",
+    headerArtifacts: "Artefactos",
+    empty: "No se encontraron tareas.",
+    emptyHint: "Cree una con: spec-protocol new <ID-DE-TAREA>",
+    taskCount: (count) => `${count} tarea(s) encontrada(s).`,
+    detailsHint: "Detalles: spec-protocol status <ID>",
+  },
+};
+
+export function isSupportedLanguageInput(
+  value: unknown,
+): value is SupportedLanguage {
+  return value === "pt-BR" || value === "en" || value === "es";
+}
+
+export function getLanguageConfigIssue(
+  raw: unknown,
+): "missing" | "invalid" | null {
+  if (raw === undefined || raw === null) return "missing";
+  if (typeof raw === "string" && raw.trim() === "") return "missing";
+  if (!isSupportedLanguageInput(raw)) return "invalid";
+  return null;
+}
+
 export function resolveLanguage(value: unknown): SupportedLanguage {
-  if (value === "pt-BR" || value === "en" || value === "es") {
+  if (isSupportedLanguageInput(value)) {
     return value;
   }
-  return DEFAULT_LANGUAGE;
+  if (typeof value !== "string") {
+    return DEFAULT_LANGUAGE;
+  }
+  const key = value.trim().toLowerCase().replace(/_/g, "-");
+  return LANGUAGE_ALIASES[key] ?? DEFAULT_LANGUAGE;
+}
+
+export function getDateLocale(language: SupportedLanguage): string {
+  const locales: Record<SupportedLanguage, string> = {
+    "pt-BR": "pt-BR",
+    en: "en-US",
+    es: "es",
+  };
+  return locales[language];
+}
+
+export function getValidateLabels(
+  language: SupportedLanguage = DEFAULT_LANGUAGE,
+): ValidateLabels {
+  return VALIDATE_LABELS[language];
+}
+
+export function getStatusLabels(
+  language: SupportedLanguage = DEFAULT_LANGUAGE,
+): StatusLabels {
+  return STATUS_LABELS[language];
+}
+
+export function getListLabels(
+  language: SupportedLanguage = DEFAULT_LANGUAGE,
+): ListLabels {
+  return LIST_LABELS[language];
 }
 
 export function getArtifactLabel(
@@ -370,8 +666,8 @@ function getFieldValue(section: string, field: string): string {
   const value = stripPlaceholders(match?.[1] ?? "").trim();
   if (
     !value ||
-    value.includes("/") ||
-    (value.includes("[") && !/^\[(CRÍTICO|RISCO|HIPÓTESE|OBSERVAÇÃO)\]/i.test(value)) ||
+    (value.includes("[") &&
+      !/^\[(CRÍTICO|RISCO|HIPÓTESE|OBSERVAÇÃO|CRITICO)\]/i.test(value)) ||
     value.includes("...")
   ) {
     return "";
@@ -482,21 +778,37 @@ export function buildSkillLanguageInstruction(
   ].join("\n");
 }
 
+const LANGUAGE_BLOCK_PATTERN =
+  /\n?## Language \/ Idioma\n[\s\S]*?(?=\n## |\n---\n|$)/;
+
+function stripSkillLanguageBlock(content: string): string {
+  return content.replace(LANGUAGE_BLOCK_PATTERN, "\n").replace(/\n{3,}/g, "\n\n");
+}
+
+/** Insere, atualiza ou remove o bloco Language nas skills RTA. */
+export function upsertSkillLanguageInstruction(
+  content: string,
+  language: SupportedLanguage,
+): string {
+  const stripped = stripSkillLanguageBlock(content);
+  const instruction = buildSkillLanguageInstruction(language);
+  if (!instruction) {
+    return stripped;
+  }
+
+  const frontmatterMatch = stripped.match(/^---\n[\s\S]*?\n---\n/);
+  if (frontmatterMatch) {
+    const rest = stripped.slice(frontmatterMatch[0].length);
+    return `${frontmatterMatch[0]}${instruction}${rest}`;
+  }
+
+  return `${instruction}${stripped}`;
+}
+
+/** @deprecated Use upsertSkillLanguageInstruction */
 export function injectSkillLanguageInstruction(
   content: string,
   language: SupportedLanguage,
 ): string {
-  const instruction = buildSkillLanguageInstruction(language);
-  if (!instruction) return content;
-
-  const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n/);
-  if (frontmatterMatch) {
-    const rest = content.slice(frontmatterMatch[0].length);
-    if (rest.includes("## Language / Idioma")) {
-      return content;
-    }
-    return `${frontmatterMatch[0]}${instruction}${rest}`;
-  }
-
-  return `${instruction}${content}`;
+  return upsertSkillLanguageInstruction(content, language);
 }

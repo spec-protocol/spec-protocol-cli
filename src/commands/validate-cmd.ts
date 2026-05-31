@@ -9,13 +9,17 @@ import { pathExists, readTextFile } from "../lib/fs.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 import {
+  DECISION_TAGS,
   DEFAULT_LANGUAGE,
+  EXCEPTION_CHECKS,
   getArtifactLabel,
   getFieldValueByKey,
   getSectionTextByKey,
+  getValidateLabels,
   hasRealText,
   normalizeStatus,
   type SupportedLanguage,
+  type ValidateLabels,
 } from "../lib/i18n.js";
 import { readConfig } from "../lib/config.js";
 
@@ -49,15 +53,22 @@ export async function runValidate(
 
   const config = await readConfig(cwd);
   const language = config?.language ?? DEFAULT_LANGUAGE;
+  const labels = getValidateLabels(language);
   const infos = await getAllArtifactInfos(taskDir);
-  const result = await buildValidationResult(taskId, infos, taskDir, language);
+  const result = await buildValidationResult(
+    taskId,
+    infos,
+    taskDir,
+    language,
+    labels,
+  );
 
   if (options.json) {
     console.log(JSON.stringify(result, null, 2));
     return result.valid ? 0 : 1;
   }
 
-  printValidationResult(result, taskId);
+  printValidationResult(result, labels);
   return result.valid ? 0 : 1;
 }
 
@@ -66,6 +77,7 @@ async function buildValidationResult(
   infos: ArtifactInfo[],
   taskDir: string,
   language: SupportedLanguage,
+  labels: ValidateLabels,
 ): Promise<ValidationResult> {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -75,13 +87,9 @@ async function buildValidationResult(
     const label = getArtifactLabel(artifact.id, language);
 
     if (artifact.critical && status !== "OK") {
-      errors.push(
-        `${artifact.file} (${label}) está ${status} — obrigatório para export`,
-      );
+      errors.push(labels.artifactCritical(artifact.file, label, status));
     } else if (!artifact.critical && status !== "OK") {
-      warnings.push(
-        `${artifact.file} (${label}) está ${status} — recomendado`,
-      );
+      warnings.push(labels.artifactRecommended(artifact.file, label, status));
     }
   }
 
@@ -89,7 +97,7 @@ async function buildValidationResult(
   const plan = await readOptional(join(taskDir, "plan.md"));
 
   if (spec) {
-    validateSpecContract(spec, errors, warnings);
+    validateSpecContract(spec, errors, warnings, labels);
   }
 
   const specStatus = spec
@@ -97,7 +105,7 @@ async function buildValidationResult(
     : "";
   if (specStatus === "PRONTO" || specStatus === "EXCEÇÃO APROVADA") {
     if (plan) {
-      validatePlanContract(plan, specStatus, errors);
+      validatePlanContract(plan, specStatus, errors, labels);
     }
   }
 
@@ -116,6 +124,7 @@ function validateSpecContract(
   content: string,
   errors: string[],
   warnings: string[],
+  labels: ValidateLabels,
 ): void {
   const classification = getSectionTextByKey(content, "spec.classification");
   const workType = getFieldValueByKey(classification, "spec.workType");
@@ -125,25 +134,23 @@ function validateSpecContract(
     getSectionTextByKey(content, "spec.readinessStatus"),
   );
 
-  if (!workType) errors.push("spec.md sem tipo de trabalho preenchido");
-  if (!riskLevel) errors.push("spec.md sem nível de risco preenchido");
-  if (!hasRealText(objective)) errors.push("spec.md sem objetivo preenchido");
-  if (!status) errors.push("spec.md sem status de prontidão preenchido");
+  if (!workType) errors.push(labels.specNoWorkType);
+  if (!riskLevel) errors.push(labels.specNoRiskLevel);
+  if (!hasRealText(objective)) errors.push(labels.specNoObjective);
+  if (!status) errors.push(labels.specNoReadinessStatus);
 
   if (status === "EXCEÇÃO APROVADA") {
     const decisions = getSectionTextByKey(content, "spec.confirmedDecisions");
     if (!hasRealText(decisions)) {
-      errors.push("spec.md com EXCEÇÃO APROVADA sem decisões confirmadas");
+      errors.push(labels.specExceptionNoDecisions);
     }
   }
 
   const pending = getSectionTextByKey(content, "spec.pendingDecisions", {
     stripPlaceholders: false,
   });
-  if (/\[CRÍTICO\]/i.test(pending) && status === "PRONTO") {
-    warnings.push(
-      "spec.md está PRONTO, mas ainda contém decisão [CRÍTICO] pendente",
-    );
+  if (DECISION_TAGS.CRITICAL.test(pending) && status === "PRONTO") {
+    warnings.push(labels.specReadyWithCriticalPending);
   }
 }
 
@@ -151,47 +158,51 @@ function validatePlanContract(
   content: string,
   specStatus: string,
   errors: string[],
+  labels: ValidateLabels,
 ): void {
   const decision = getSectionTextByKey(content, "plan.finalDecision");
   const planStatus = normalizeStatus(decision);
   const inputs = getSectionTextByKey(content, "plan.validatedInputs");
   const acceptance = getSectionTextByKey(content, "plan.acceptanceCriteria");
 
-  if (!planStatus) errors.push("plan.md sem status em Decisão final");
-  if (!hasRealText(inputs)) errors.push("plan.md sem insumos validados");
+  if (!planStatus) errors.push(labels.planNoFinalStatus);
+  if (!hasRealText(inputs)) errors.push(labels.planNoValidatedInputs);
   if (!hasRealText(acceptance)) {
-    errors.push("plan.md sem critérios de aceite finais");
+    errors.push(labels.planNoAcceptanceCriteria);
   }
 
   if (specStatus === "EXCEÇÃO APROVADA") {
     const exception = getSectionTextByKey(content, "plan.exceptionMode");
     if (!hasRealText(exception)) {
-      errors.push(
-        "plan.md sem modo de exceção apesar de spec.md estar EXCEÇÃO APROVADA",
-      );
+      errors.push(labels.planNoExceptionMode);
     }
-    if (!/respons[aá]vel|responsible/i.test(exception)) {
-      errors.push("plan.md em exceção sem responsável pela decisão");
+    if (!EXCEPTION_CHECKS.owner.test(exception)) {
+      errors.push(labels.planExceptionNoOwner);
     }
-    if (!/risco|risk|riesgo/i.test(exception)) {
-      errors.push("plan.md em exceção sem riscos aceitos");
+    if (!EXCEPTION_CHECKS.risks.test(exception)) {
+      errors.push(labels.planExceptionNoRisks);
     }
   }
 }
 
-function printValidationResult(result: ValidationResult, taskId: string): void {
+function printValidationResult(
+  result: ValidationResult,
+  labels: ValidateLabels,
+): void {
   console.log("");
 
   if (result.errors.length === 0 && result.warnings.length === 0) {
-    console.log(chalk.green(`  ✓ ${taskId} — artefatos críticos preenchidos`));
-    console.log(chalk.gray(`    Pronto para: spec-protocol export ${taskId}`));
+    console.log(chalk.green(`  ${labels.successTitle(result.taskId)}`));
+    console.log(chalk.gray(`    ${labels.readyForExport(result.taskId)}`));
     console.log("");
     return;
   }
 
   if (result.errors.length > 0) {
     console.log(
-      chalk.red(`  ✗ ${taskId} — ${result.errors.length} bloqueio(s):`),
+      chalk.red(
+        `  ${labels.blocksTitle(result.taskId, result.errors.length)}`,
+      ),
     );
     console.log("");
     for (const err of result.errors) {
@@ -201,7 +212,7 @@ function printValidationResult(result: ValidationResult, taskId: string): void {
   }
 
   if (result.warnings.length > 0) {
-    console.log(chalk.yellow(`  ⚠ Avisos (${result.warnings.length}):`));
+    console.log(chalk.yellow(`  ${labels.warningsTitle(result.warnings.length)}`));
     for (const warn of result.warnings) {
       console.log(chalk.yellow(`    ~ ${warn}`));
     }
@@ -209,10 +220,8 @@ function printValidationResult(result: ValidationResult, taskId: string): void {
   }
 
   if (!result.valid) {
-    console.log(
-      chalk.gray(`    Veja o progresso: spec-protocol status ${taskId}`),
-    );
-    console.log(chalk.gray(`    Na IDE: @rta-triagem`));
+    console.log(chalk.gray(`    ${labels.seeProgress(result.taskId)}`));
+    console.log(chalk.gray(`    ${labels.ideHint}`));
     console.log("");
   }
 }

@@ -1,14 +1,28 @@
 import chalk from "chalk";
-import { assertProtocolInitialized, getTaskIds, getTaskSummary } from "../lib/task-progress.js";
+import { readConfig } from "../lib/config.js";
+import {
+  DEFAULT_LANGUAGE,
+  getDateLocale,
+  getListLabels,
+} from "../lib/i18n.js";
+import {
+  assertProtocolInitialized,
+  getTaskIds,
+  getTaskSummary,
+} from "../lib/task-progress.js";
 
 export async function runList(cwd: string = process.cwd()): Promise<void> {
   await assertProtocolInitialized(cwd);
 
+  const config = await readConfig(cwd);
+  const language = config?.language ?? DEFAULT_LANGUAGE;
+  const labels = getListLabels(language);
+  const dateLocale = getDateLocale(language);
   const ids = await getTaskIds(cwd);
 
   if (ids.length === 0) {
-    console.log(chalk.yellow("Nenhuma tarefa encontrada."));
-    console.log(chalk.gray("  Crie uma com: spec-protocol new <ID-DA-TAREFA>"));
+    console.log(chalk.yellow(labels.empty));
+    console.log(chalk.gray(`  ${labels.emptyHint}`));
     console.log("");
     return;
   }
@@ -16,7 +30,7 @@ export async function runList(cwd: string = process.cwd()): Promise<void> {
   console.log("");
   console.log(
     chalk.bold(
-      `  ${"ID".padEnd(24)} ${"Criada em".padEnd(12)} ${"Progresso".padEnd(10)} Artefatos`,
+      `  ${labels.headerId.padEnd(24)} ${labels.headerCreated.padEnd(12)} ${labels.headerProgress.padEnd(10)} ${labels.headerArtifacts}`,
     ),
   );
   console.log(chalk.gray("  " + "─".repeat(62)));
@@ -25,7 +39,7 @@ export async function runList(cwd: string = process.cwd()): Promise<void> {
     const summary = await getTaskSummary(cwd, id);
 
     const dateStr = summary.createdAt
-      ? summary.createdAt.toLocaleDateString("pt-BR", {
+      ? summary.createdAt.toLocaleDateString(dateLocale, {
           day: "2-digit",
           month: "2-digit",
           year: "2-digit",
@@ -42,8 +56,8 @@ export async function runList(cwd: string = process.cwd()): Promise<void> {
   }
 
   console.log("");
-  console.log(chalk.gray(`  ${ids.length} tarefa(s) encontrada(s).`));
-  console.log(chalk.gray("  Detalhes: spec-protocol status <ID>"));
+  console.log(chalk.gray(`  ${labels.taskCount(ids.length)}`));
+  console.log(chalk.gray(`  ${labels.detailsHint}`));
   console.log("");
 }
 

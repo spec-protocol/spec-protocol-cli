@@ -20,7 +20,7 @@
 
 ## Classified findings
 
-<!-- Use [CRÍTICO], [RISCO], [HIPÓTESE], or [OBSERVAÇÃO], always with evidence when available -->
+<!-- RTA taxonomy tags (always in Portuguese): [CRÍTICO], [RISCO], [HIPÓTESE], [OBSERVAÇÃO] — with evidence when available -->
 
 ## Hypotheses raised [HIPÓTESE]
 
@@ -36,7 +36,7 @@
 
 ## Pending decisions
 
-<!-- Business or technical decisions that block or change scope. Use [CRÍTICO], [RISCO], [HIPÓTESE], or [OBSERVAÇÃO]. -->
+<!-- RTA tags in Portuguese: [CRÍTICO], [RISCO], [HIPÓTESE], [OBSERVAÇÃO]. Business or technical decisions that block or change scope. -->
 
 ## Confirmed decisions
 

@@ -12,7 +12,12 @@ import {
   getTemplatesDir,
 } from "../lib/paths.js";
 import { LEGACY_PROTOCOL_DIR, RTA_SKILL_DIRS } from "../constants.js";
-import { SUPPORTED_LANGUAGES } from "../lib/i18n.js";
+import {
+  DEFAULT_LANGUAGE,
+  getLanguageConfigIssue,
+  resolveLanguage,
+  SUPPORTED_LANGUAGES,
+} from "../lib/i18n.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -34,6 +39,7 @@ export async function runDoctor(cwd: string = process.cwd()): Promise<void> {
     checkNode(),
     checkProtocolDir(cwd),
     checkConfigJson(cwd),
+    checkConfigLanguage(cwd),
     checkArtifactTemplates(),
     checkRtaSkills(cwd),
     checkSkillPack(),
@@ -125,6 +131,56 @@ async function checkConfigJson(cwd: string): Promise<CheckResult> {
       message: "JSON inválido",
       action: "spec-protocol init (recria o config)",
       blocking: true,
+    };
+  }
+}
+
+async function checkConfigLanguage(cwd: string): Promise<CheckResult> {
+  const configPath = getConfigPath(cwd);
+  if (!(await pathExists(configPath))) {
+    return {
+      label: "config.language",
+      ok: false,
+      message: "config.json ausente",
+      action: "spec-protocol init",
+      blocking: false,
+    };
+  }
+  try {
+    const raw = await readFile(configPath, "utf-8");
+    const parsed = JSON.parse(raw) as { language?: unknown };
+    const issue = getLanguageConfigIssue(parsed.language);
+    if (issue === "missing") {
+      return {
+        label: "config.language",
+        ok: false,
+        message: `ausente — usando ${DEFAULT_LANGUAGE}`,
+        action: "spec-protocol init (backfill)",
+        blocking: false,
+      };
+    }
+    if (issue === "invalid") {
+      const normalized = resolveLanguage(parsed.language);
+      return {
+        label: "config.language",
+        ok: false,
+        message: `inválido: ${JSON.stringify(parsed.language)} → use ${normalized}`,
+        action: "spec-protocol init ou edite config.json",
+        blocking: false,
+      };
+    }
+    return {
+      label: "config.language",
+      ok: true,
+      message: String(parsed.language),
+      blocking: false,
+    };
+  } catch {
+    return {
+      label: "config.language",
+      ok: false,
+      message: "não foi possível ler config.json",
+      blocking: false,
     };
   }
 }

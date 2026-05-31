@@ -133,9 +133,16 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 ### Idiomas (i18n)
 
 - No `init`, escolha entre **Português (Brasil)**, **English** ou **Español**.
-- A escolha afeta templates gerados por `new`, roteiros do `context`, labels do `export`, labels de artefatos e instrução de idioma nas skills instaladas.
+- A escolha afeta templates gerados por `new`, roteiros do `context`, labels do `export`, `status`, `validate`, `list`, labels de artefatos e instrução de idioma nas skills instaladas.
 - Nomes técnicos permanecem iguais: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
-- A primeira versão **não** localiza todas as mensagens da CLI; troca de idioma após o `init` fica fora do escopo inicial.
+- Tags RTA (`[CRÍTICO]`, `[RISCO]`, etc.) permanecem em português em todos os idiomas.
+- Rode `spec-protocol init` novamente para sincronizar o bloco de idioma nas skills já instaladas.
+
+### Upgrade (1.0.1+)
+
+- Reinstale o pacote para obter templates em `templates/{pt-BR,en,es}/`: `npm install -g spec-protocol-cli@latest`
+- Valide com `spec-protocol doctor` (checa templates i18n e `config.language`)
+- **Não suportado:** tarefas no formato antigo com subpastas `artifacts/` e `answers/`. Recrie com `spec-protocol new <ID>` e preencha `spec.md`, `plan.md` e `tasks.md` na raiz da pasta da tarefa.
 
 ### Desenvolvimento local
 
@@ -279,9 +286,16 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 ### Languages (i18n)
 
 - During `init`, choose **Português (Brasil)**, **English**, or **Español**.
-- The choice affects templates created by `new`, `context` guides, `export` labels, artifact labels, and language instructions injected into installed skills.
+- The choice affects templates from `new`, `context` guides, `export` labels, `status`, `validate`, `list`, artifact labels, and language instructions in installed skills.
 - Technical names stay unchanged: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
-- The first version does **not** localize all CLI messages; changing language after `init` is out of initial scope.
+- RTA taxonomy tags (`[CRÍTICO]`, `[RISCO]`, etc.) stay in Portuguese in all languages.
+- Run `spec-protocol init` again to sync the language block on already installed skills.
+
+### Upgrade (1.0.1+)
+
+- Reinstall the package for `templates/{pt-BR,en,es}/`: `npm install -g spec-protocol-cli@latest`
+- Validate with `spec-protocol doctor` (i18n templates and `config.language`)
+- **Not supported:** legacy tasks with `artifacts/` and `answers/` subfolders. Recreate with `spec-protocol new <ID>` and fill `spec.md`, `plan.md`, and `tasks.md` at the task folder root.
 
 ### Local development
 
@@ -425,9 +439,16 @@ Después de `init`, la CLI crea `.spec-protocol/config.json`:
 ### Idiomas (i18n)
 
 - En `init`, elija **Português (Brasil)**, **English** o **Español**.
-- La elección afecta templates de `new`, guías de `context`, labels de `export`, labels de artefactos e instrucciones de idioma en skills instaladas.
+- La elección afecta templates de `new`, guías de `context`, labels de `export`, `status`, `validate`, `list`, labels de artefactos e instrucciones de idioma en skills instaladas.
 - Los nombres técnicos permanecen iguales: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
-- La primera versión **no** localiza todos los mensajes de la CLI; cambiar idioma después de `init` queda fuera del alcance inicial.
+- Las tags RTA (`[CRÍTICO]`, `[RISCO]`, etc.) permanecen en portugués en todos los idiomas.
+- Ejecute `spec-protocol init` de nuevo para sincronizar el bloque de idioma en skills ya instaladas.
+
+### Actualización (1.0.1+)
+
+- Reinstale el paquete para obtener `templates/{pt-BR,en,es}/`: `npm install -g spec-protocol-cli@latest`
+- Valide con `spec-protocol doctor` (templates i18n y `config.language`)
+- **No soportado:** tareas en formato antiguo con subcarpetas `artifacts/` y `answers/`. Recree con `spec-protocol new <ID>` y complete `spec.md`, `plan.md` y `tasks.md` en la raíz de la tarea.
 
 ### Desarrollo local
 
