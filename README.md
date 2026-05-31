@@ -450,3 +450,20 @@ Después de `npm link`, el binario local queda disponible como `spec-protocol`.
 ### Licencia
 
 Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
+
+
+## 🛡️ Segurança
+
+A segurança e integridade do seu repositório de código são nossas maiores prioridades:
+*   **Whitelist de Arquivos**: O empacotamento para publicação no npm utiliza a regra estrita `files` do `package.json`. Apenas a pasta `dist/` (compilada), a pasta de `templates/`, o `README.md` e o `LICENSE` são enviados. Arquivos locais de configuração, arquivos `.env`, chaves privadas e o código-fonte original ficam 100% de fora do pacote final.
+*   **Prevenção de Execução de Shell**: Nenhuma chamada a processos filhos (como abertura de editores via `open` ou execução do Spec-Kit via `specify`) realiza avaliação arbitrária de string no shell (parâmetro `shell: false`). As chamadas são diretas usando vetores de argumentos (`spawn`/`execFile`), prevenindo riscos de command injection.
+*   **Nota de Auditoria**: Mantemos nossas dependências livres de vulnerabilidades críticas através de auditorias recorrentes do `npm audit`.
+
+---
+
+## 📄 Licença e Isenção de Responsabilidade
+
+Este projeto é licenciado sob os termos da **Licença MIT**.
+
+> **AVISO DE ISENÇÃO DE RESPONSABILIDADE**:
+> O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM QUALQUER TIPO DE GARANTIA, EXPRESSA OU IMPLÍCITA. EM NENHUMA CIRCUNSTÂNCIA OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO, DANOS OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA, DECORRENTE DE, OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO SOFTWARE.
