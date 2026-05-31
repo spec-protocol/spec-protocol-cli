@@ -1,16 +1,20 @@
 import chalk from "chalk";
 import { join } from "node:path";
-import {
-  ANSWER_PLACEHOLDER,
-  STAGES,
-  SUMMARY_TEMPLATE,
-} from "../constants.js";
-import { pathExists, ensureDir, copyDirFiles, writeTextFile } from "../lib/fs.js";
+import { ARTIFACTS } from "../constants.js";
+import { pathExists, ensureDir, readTextFile, writeTextFile } from "../lib/fs.js";
 import { getProtocolRoot, getTaskDir, getTemplatesDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
-function answerTemplate(stageNum: number, stageName: string): string {
-  return `# Resposta — Etapa ${stageNum} — ${stageName}\n${ANSWER_PLACEHOLDER}\n`;
+async function loadArtifactTemplate(
+  filename: string,
+  taskId: string,
+): Promise<string> {
+  const templatePath = join(getTemplatesDir(), filename);
+  if (!(await pathExists(templatePath))) {
+    throw new Error(`Template não encontrado: ${templatePath}`);
+  }
+  const raw = await readTextFile(templatePath);
+  return raw.replace(/\[TASK-ID\]/g, taskId);
 }
 
 export async function runNew(
@@ -39,25 +43,19 @@ export async function runNew(
     throw new Error(`Templates não encontrados em: ${templatesDir}`);
   }
 
-  const artifactsDir = join(taskDir, "artifacts");
-  const answersDir = join(taskDir, "answers");
+  await ensureDir(taskDir);
 
-  await ensureDir(artifactsDir);
-  await ensureDir(answersDir);
-
-  await copyDirFiles(templatesDir, artifactsDir, (name) => name.endsWith(".md"));
-
-  for (const stage of STAGES) {
-    await writeTextFile(
-      join(answersDir, stage.answer),
-      answerTemplate(stage.num, stage.name),
-    );
+  for (const artifact of ARTIFACTS) {
+    const content = await loadArtifactTemplate(artifact.file, taskId);
+    await writeTextFile(join(taskDir, artifact.file), content);
   }
 
-  await writeTextFile(join(taskDir, "summary.md"), SUMMARY_TEMPLATE);
-
   console.log(chalk.green(`✓ Tarefa criada: .spec-protocol/tasks/${taskId}/`));
-  console.log(chalk.gray("  artifacts/ — templates para rodar na IA"));
-  console.log(chalk.gray("  answers/   — cole aqui as respostas da IA"));
+  for (const artifact of ARTIFACTS) {
+    console.log(chalk.gray(`  ${artifact.file} — ${artifact.name}`));
+  }
+  console.log("");
+  console.log(chalk.gray("  Na IDE: @rta-triagem com o card do Jira"));
+  console.log(chalk.gray("  Atualize spec.md / plan.md / tasks.md conforme as skills orientarem"));
   console.log("");
 }

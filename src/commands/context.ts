@@ -1,17 +1,17 @@
 import chalk from "chalk";
-import { join, relative } from "node:path";
-import { STAGES } from "../constants.js";
+import { relative } from "node:path";
+import { ARTIFACTS } from "../constants.js";
 import {
   assertProtocolInitialized,
-  getNextIncompleteStage,
-  getAllStageInfos,
+  getAllArtifactInfos,
+  getNextIncompleteArtifact,
 } from "../lib/task-progress.js";
-import { pathExists, writeTextFile } from "../lib/fs.js";
+import { pathExists, readTextFile, writeTextFile } from "../lib/fs.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
 export interface ContextOptions {
-  stage?: number;
+  artifact?: string;
   save?: boolean;
 }
 
@@ -32,47 +32,50 @@ export async function runContext(
     );
   }
 
-  const infos = await getAllStageInfos(taskDir);
+  const infos = await getAllArtifactInfos(taskDir);
 
-  // Determina a etapa alvo
-  let targetStageNum: number;
-  if (options.stage !== undefined) {
-    targetStageNum = options.stage;
-    if (targetStageNum < 1 || targetStageNum > STAGES.length) {
-      throw new Error(`Etapa inválida: ${targetStageNum}. Use 1 a ${STAGES.length}.`);
+  let targetArtifactId: string;
+  if (options.artifact) {
+    const found = ARTIFACTS.find(
+      (a) => a.id === options.artifact || a.file === options.artifact,
+    );
+    if (!found) {
+      throw new Error(
+        `Artefato inválido: ${options.artifact}. Use: spec, plan, tasks`,
+      );
     }
+    targetArtifactId = found.id;
   } else {
-    const next = infos.find((i) => i.status !== "OK");
+    const next = await getNextIncompleteArtifact(taskDir);
     if (!next) {
-      console.log(chalk.green("  ✓ Todas as etapas estão preenchidas!"));
+      console.log(chalk.green("  ✓ Todos os artefatos estão preenchidos!"));
       console.log(chalk.gray(`    Próximo passo: spec-protocol validate ${taskId}`));
       console.log("");
       return;
     }
-    targetStageNum = next.stage.num;
+    targetArtifactId = next.artifact.id;
   }
 
-  const targetInfo = infos.find((i) => i.stage.num === targetStageNum)!;
-  const stage = targetInfo.stage;
-
-  // Monta contextos anteriores (respostas OK)
-  const priorAnswers = infos
-    .filter((i) => i.stage.num < targetStageNum && i.status === "OK")
-    .map((i) => i.answerPath);
-
+  const targetInfo = infos.find((i) => i.artifact.id === targetArtifactId)!;
+  const specContent = await readOptional(`${taskDir}/spec.md`);
   const contextContent = buildContextGuide({
     taskId,
-    stage,
-    artifactPath: targetInfo.artifactPath,
-    priorAnswerPaths: priorAnswers,
+    artifact: targetInfo.artifact,
+    artifactPath: targetInfo.path,
+    allInfos: infos,
+    specContent,
     cwd,
   });
 
   if (options.save) {
-    const savePath = join(taskDir, `context-stage-${stage.num}.md`);
+    const savePath = `${taskDir}/context-${targetInfo.artifact.id}.md`;
     await writeTextFile(savePath, contextContent);
     console.log(chalk.green(`  ✓ Roteiro salvo em:`));
-    console.log(chalk.cyan(`    .spec-protocol/tasks/${taskId}/context-stage-${stage.num}.md`));
+    console.log(
+      chalk.cyan(
+        `    .spec-protocol/tasks/${taskId}/context-${targetInfo.artifact.id}.md`,
+      ),
+    );
     console.log("");
   } else {
     console.log("");
@@ -82,50 +85,84 @@ export async function runContext(
 
 function buildContextGuide(opts: {
   taskId: string;
-  stage: typeof STAGES[number];
+  artifact: (typeof ARTIFACTS)[number];
   artifactPath: string;
-  priorAnswerPaths: string[];
+  allInfos: Awaited<ReturnType<typeof getAllArtifactInfos>>;
+  specContent: string | null;
   cwd: string;
 }): string {
-  const { taskId, stage, artifactPath, priorAnswerPaths, cwd } = opts;
+  const { taskId, artifact, artifactPath, allInfos, specContent, cwd } = opts;
   const relArtifact = relative(cwd, artifactPath);
-  const relPriors = priorAnswerPaths.map((p) => relative(cwd, p));
+  const filledOthers = allInfos
+    .filter((i) => i.artifact.id !== artifact.id && i.status === "OK")
+    .map((i) => relative(cwd, i.path));
+
+  const skillHint = skillForArtifact(artifact.id, specContent);
 
   const lines: string[] = [
-    `# Roteiro de contexto — ${taskId} / Etapa ${stage.num}`,
-    `> Gerado por spec-protocol-cli — cole este roteiro no seu chat de IA`,
+    `# Roteiro RTA — ${taskId} / ${artifact.file}`,
+    `> Gerado por spec-protocol-cli — use na IDE com skills RTA`,
     "",
-    `## Etapa ${stage.num} — ${stage.name}`,
+    "## 1. Skill recomendada",
     "",
-    "### 1. Arquivos a referenciar com @",
+    `- **Ponto de entrada:** \`@rta-triagem\``,
+    `- **Para este artefato:** \`${skillHint}\``,
     "",
-    `- **Template da etapa:** \`@${relArtifact}\``,
+    "## 2. Arquivos a referenciar com @",
+    "",
+    `- **Artefato alvo:** \`@${relArtifact}\``,
   ];
 
-  if (relPriors.length > 0) {
-    lines.push("- **Respostas anteriores (contexto acumulado):**");
-    for (const p of relPriors) {
+  if (filledOthers.length > 0) {
+    lines.push("- **Outros artefatos já preenchidos:**");
+    for (const p of filledOthers) {
       lines.push(`  - \`@${p}\``);
     }
   }
 
   lines.push(
     "",
-    "### 2. Instrução para a IA",
+    "## 3. Instrução",
     "",
-    `Abra o arquivo de template acima (\`@${relArtifact}\`) no Cursor (ou cole o conteúdo no chat).`,
-    `${relPriors.length > 0 ? "Referencie também as respostas anteriores listadas acima para manter contexto cumulativo. " : ""}`,
-    "Peça para a IA preencher o template conforme as instruções internas do arquivo.",
+    "Cole o card do Jira no chat. Invoque a skill RTA indicada acima.",
+    "A skill orienta análise, preserva decisões já registradas e sugere conteúdo copiável para o artefato.",
+    "Copie/refine a saída em `" + relArtifact + "`.",
     "",
-    "### 3. Após receber a resposta",
+    "## 4. Depois",
     "",
-    `Cole o output da IA em:`,
-    `\`\`\``,
-    `.spec-protocol/tasks/${taskId}/answers/${STAGES.find((s) => s.num === stage.num)?.answer}`,
-    `\`\`\``,
-    "",
-    `Depois verifique: \`spec-protocol status ${taskId}\``,
+    `\`spec-protocol status ${taskId}\``,
+    `\`spec-protocol validate ${taskId}\` (quando spec.md e plan.md estiverem OK)`,
   );
 
   return lines.join("\n");
+}
+
+async function readOptional(path: string): Promise<string | null> {
+  try {
+    return await readTextFile(path);
+  } catch {
+    return null;
+  }
+}
+
+function skillForArtifact(id: string, specContent: string | null): string {
+  switch (id) {
+    case "spec":
+      return hasClassification(specContent)
+        ? "@rta-analise → @rta-dor (spec.md já tem classificação)"
+        : "@rta-triagem (spec.md ainda sem classificação)";
+    case "plan":
+      return "@rta-plan (somente se spec.md estiver PRONTO ou EXCEÇÃO APROVADA)";
+    case "tasks":
+      return "@rta-plan (somente após plan.md e spec.md prontos)";
+    default:
+      return "@rta-triagem";
+  }
+}
+
+function hasClassification(specContent: string | null): boolean {
+  if (!specContent) return false;
+  const type = specContent.match(/Tipo de trabalho:\s*([^\n<]+)/i)?.[1]?.trim();
+  const risk = specContent.match(/Nível de risco:\s*([^\n<]+)/i)?.[1]?.trim();
+  return Boolean(type && risk);
 }

@@ -4,8 +4,14 @@ import { promisify } from "node:util";
 import { join } from "node:path";
 import { readFile } from "node:fs/promises";
 import { pathExists } from "../lib/fs.js";
-import { getPackageRoot, getProtocolRoot, getConfigPath } from "../lib/paths.js";
-import { LEGACY_PROTOCOL_DIR } from "../constants.js";
+import {
+  getAgentsSkillsDir,
+  getPackageRoot,
+  getProtocolRoot,
+  getConfigPath,
+  getTemplatesDir,
+} from "../lib/paths.js";
+import { LEGACY_PROTOCOL_DIR, RTA_SKILL_DIRS } from "../constants.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -27,7 +33,9 @@ export async function runDoctor(cwd: string = process.cwd()): Promise<void> {
     checkNode(),
     checkProtocolDir(cwd),
     checkConfigJson(cwd),
-    checkTemplates(),
+    checkArtifactTemplates(),
+    checkRtaSkills(cwd),
+    checkSkillPack(),
     checkSpecify(),
     checkLegacyDir(cwd),
     checkGitignore(cwd),
@@ -63,14 +71,14 @@ export async function runDoctor(cwd: string = process.cwd()): Promise<void> {
   if (hasErrors) {
     console.log(chalk.red("  ✗ Corrija os itens acima antes de continuar."));
   } else {
-    console.log(chalk.green("  ✓ Ambiente OK — pronto para usar o protocolo."));
+    console.log(chalk.green("  ✓ Ambiente OK — pronto para usar o RTA."));
   }
 
   console.log("");
 }
 
 async function checkNode(): Promise<CheckResult> {
-  const version = process.version; // e.g. "v20.11.0"
+  const version = process.version;
   const major = parseInt(version.slice(1).split(".")[0], 10);
   const ok = major >= 18;
   return {
@@ -120,13 +128,53 @@ async function checkConfigJson(cwd: string): Promise<CheckResult> {
   }
 }
 
-async function checkTemplates(): Promise<CheckResult> {
-  const templatesDir = join(getPackageRoot(), "templates");
-  const ok = await pathExists(templatesDir);
+async function checkArtifactTemplates(): Promise<CheckResult> {
+  const templatesDir = getTemplatesDir();
+  const required = ["spec.md", "plan.md", "tasks.md"];
+  const missing: string[] = [];
+  for (const file of required) {
+    if (!(await pathExists(join(templatesDir, file)))) {
+      missing.push(file);
+    }
+  }
+  const ok = missing.length === 0;
   return {
-    label: "templates/ no pacote",
+    label: "templates artefatos v2",
     ok,
-    message: ok ? "encontrados" : "não encontrados",
+    message: ok ? "spec/plan/tasks OK" : `faltam: ${missing.join(", ")}`,
+    action: ok ? undefined : "Reinstale: npm install -g spec-protocol-cli",
+    blocking: true,
+  };
+}
+
+async function checkRtaSkills(cwd: string): Promise<CheckResult> {
+  const skillsDir = getAgentsSkillsDir(cwd);
+  const missing: string[] = [];
+  for (const skill of RTA_SKILL_DIRS) {
+    const skillPath = join(skillsDir, skill, "SKILL.md");
+    if (!(await pathExists(skillPath))) {
+      missing.push(skill);
+    }
+  }
+  const ok = missing.length === 0;
+  return {
+    label: ".agents/skills RTA instaladas",
+    ok,
+    message: ok
+      ? `${RTA_SKILL_DIRS.length} skills`
+      : `faltam ${missing.length}: ${missing.slice(0, 2).join(", ")}…`,
+    action: ok ? undefined : "spec-protocol init",
+    blocking: false,
+  };
+}
+
+async function checkSkillPack(): Promise<CheckResult> {
+  const packDir = join(getPackageRoot(), ".agents", "skills");
+  const ok = await pathExists(join(packDir, "rta-triagem", "SKILL.md"));
+  return {
+    label: "skill pack no pacote npm",
+    ok,
+    message: ok ? "encontrado" : "não encontrado",
     action: ok ? undefined : "Reinstale: npm install -g spec-protocol-cli",
     blocking: true,
   };

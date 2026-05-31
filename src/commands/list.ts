@@ -16,7 +16,7 @@ export async function runList(cwd: string = process.cwd()): Promise<void> {
   console.log("");
   console.log(
     chalk.bold(
-      `  ${"ID".padEnd(24)} ${"Criada em".padEnd(12)} ${"Progresso".padEnd(10)} Etapas`,
+      `  ${"ID".padEnd(24)} ${"Criada em".padEnd(12)} ${"Progresso".padEnd(10)} Artefatos`,
     ),
   );
   console.log(chalk.gray("  " + "─".repeat(62)));

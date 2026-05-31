@@ -2,8 +2,8 @@ import {
   access,
   copyFile,
   mkdir,
-  readFile,
   readdir,
+  readFile,
   writeFile,
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -47,5 +47,23 @@ export async function copyDirFiles(
       join(sourceDir, entry.name),
       join(targetDir, entry.name),
     );
+  }
+}
+
+/** Copia diretório recursivamente (arquivos e subpastas). */
+export async function copyDirRecursive(
+  sourceDir: string,
+  targetDir: string,
+): Promise<void> {
+  await ensureDir(targetDir);
+  const entries = await readdir(sourceDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const src = join(sourceDir, entry.name);
+    const dest = join(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      await copyDirRecursive(src, dest);
+    } else if (entry.isFile()) {
+      await copyFile(src, dest);
+    }
   }
 }

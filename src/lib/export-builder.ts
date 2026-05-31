@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { STAGES, ANSWER_PLACEHOLDER } from "../constants.js";
+import { ARTIFACTS } from "../constants.js";
 import { readTextFile } from "./fs.js";
 import type { ProtocolConfig } from "./config.js";
 
@@ -7,6 +7,10 @@ function isPlaceholderOnly(content: string): boolean {
   const stripped = content
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/^#.*$/gm, "")
+    .replace(/^##.*$/gm, "")
+    .replace(/^\s*-\s+[^:\n]+:\s*$/gm, "")
+    .replace(/^- \[ \].*$/gm, "")
+    .replace(/^\[TASK-ID\]/g, "")
     .trim();
   return stripped.length === 0;
 }
@@ -18,12 +22,12 @@ function section(title: string, body: string | null): string {
   return `## ${title}\n\n${body.trim()}\n`;
 }
 
-async function readAnswer(
-  answersDir: string,
+async function readArtifact(
+  taskDir: string,
   filename: string,
 ): Promise<string | null> {
   try {
-    return await readTextFile(join(answersDir, filename));
+    return await readTextFile(join(taskDir, filename));
   } catch {
     return null;
   }
@@ -35,16 +39,14 @@ export async function buildSpecKitInput(options: {
   config: ProtocolConfig | null;
 }): Promise<string> {
   const { taskId, taskDir, config } = options;
-  const answersDir = join(taskDir, "answers");
   const exportedAt = new Date().toISOString();
 
-  const answers: Record<number, string | null> = {};
-  for (const stage of STAGES) {
-    answers[stage.num] = await readAnswer(answersDir, stage.answer);
-  }
+  const spec = await readArtifact(taskDir, "spec.md");
+  const plan = await readArtifact(taskDir, "plan.md");
+  const tasks = await readArtifact(taskDir, "tasks.md");
 
   const meta = [
-    "# Spec-Kit Input — AI Spec Protocol",
+    "# Spec-Kit Input — RTA / AI Spec Protocol",
     "",
     "## Metadados",
     "",
@@ -55,31 +57,18 @@ export async function buildSpecKitInput(options: {
     "",
   ].join("\n");
 
-  const resumo =
-    answers[1] ?? answers[2]
-      ? [answers[1], answers[2]].filter(Boolean).join("\n\n---\n\n")
-      : null;
-
-  const mapa = [answers[1], answers[2]].filter(Boolean).join("\n\n") || null;
-  const dor = answers[3];
-  const devolutiva = answers[4];
-  const revalidacao = answers[5];
-
   const parts = [
     meta,
-    section("Resumo da demanda", resumo),
-    section("Mapa de módulos e arquivos afetados", mapa),
-    section("Status Definition of Ready (Etapa 3)", dor),
-    section("Devolutiva ao PO (Etapa 4)", devolutiva),
-    section("Critérios de aceite finais (Etapa 5)", revalidacao),
-    section("Checklist técnica de implementação (Etapa 5)", revalidacao),
-    "## Anexo — Respostas completas por etapa",
+    section("Especificação consolidada (spec.md)", spec),
+    section("Plano técnico (plan.md)", plan),
+    section("Checklist de implementação (tasks.md)", tasks),
+    "## Anexo — Artefatos completos",
     "",
   ];
 
-  for (const stage of STAGES) {
-    const content = answers[stage.num];
-    parts.push(`### Etapa ${stage.num} — ${stage.name}`);
+  for (const artifact of ARTIFACTS) {
+    const content = await readArtifact(taskDir, artifact.file);
+    parts.push(`### ${artifact.name} — ${artifact.file}`);
     parts.push("");
     if (content && !isPlaceholderOnly(content)) {
       parts.push(content.trim());
@@ -98,4 +87,4 @@ export async function buildSpecKitInput(options: {
   return parts.join("\n");
 }
 
-export { isPlaceholderOnly, ANSWER_PLACEHOLDER };
+export { isPlaceholderOnly };

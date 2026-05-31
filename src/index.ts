@@ -16,14 +16,14 @@ const program = new Command();
 
 program
   .name("spec-protocol")
-  .description("AI Spec Protocol — especificação assistida por IA (AISP)")
-  .version("0.1.0");
+  .description("RTA — Refinamento Técnico Assistido por IA")
+  .version("0.2.0");
 
 // ─── v0.1 ────────────────────────────────────────────────────────────────────
 
 program
   .command("init")
-  .description("Inicializa ./.spec-protocol no repositório atual")
+  .description("Inicializa RTA: .spec-protocol + skills em .agents/skills")
   .option("--no-gitignore", "Pula a atualização do .gitignore")
   .action(async (opts) => {
     try {
@@ -35,7 +35,7 @@ program
 
 program
   .command("new")
-  .description("Cria estrutura de pastas e artefatos para uma tarefa")
+  .description("Cria spec.md, plan.md e tasks.md para uma tarefa")
   .argument("<task-id>", "ID da tarefa (ex.: JIRA-123)")
   .action(async (taskId: string) => {
     try {
@@ -85,7 +85,7 @@ program
 
 program
   .command("status")
-  .description("Exibe o painel de progresso das 5 etapas de uma tarefa")
+  .description("Exibe progresso dos artefatos spec/plan/tasks")
   .argument("<task-id>", "ID da tarefa")
   .action(async (taskId: string) => {
     try {
@@ -97,7 +97,7 @@ program
 
 program
   .command("validate")
-  .description("Valida etapas críticas antes do export (exit code 0/1 — útil em CI)")
+  .description("Valida artefatos críticos antes do export (exit 0/1 — CI)")
   .argument("<task-id>", "ID da tarefa")
   .option("--json", "Saída em JSON para integração com CI/scripts")
   .action(async (taskId: string, opts) => {
@@ -122,13 +122,13 @@ program
 
 program
   .command("context")
-  .description("Gera roteiro de contexto para colar no Cursor/IA")
+  .description("Gera roteiro RTA com skills e artefatos para a IDE")
   .argument("<task-id>", "ID da tarefa")
-  .option("--stage <n>", "Etapa específica (1–5); padrão: próxima incompleta", parseInt)
-  .option("--save", "Salva o roteiro em context-stage-N.md na pasta da tarefa")
+  .option("--artifact <id>", "Artefato: spec, plan ou tasks; padrão: próximo incompleto")
+  .option("--save", "Salva em context-{artifact}.md na pasta da tarefa")
   .action(async (taskId: string, opts) => {
     try {
-      await runContext(taskId, { stage: opts.stage, save: opts.save });
+      await runContext(taskId, { artifact: opts.artifact, save: opts.save });
     } catch (err) {
       exitWithError(err);
     }
@@ -136,13 +136,12 @@ program
 
 program
   .command("open")
-  .description("Abre artifact ou answer no editor detectado (Cursor, VS Code…)")
+  .description("Abre spec.md, plan.md ou tasks.md no editor (Cursor, VS Code…)")
   .argument("<task-id>", "ID da tarefa")
-  .option("--stage <n>", "Etapa específica (1–5); padrão: próxima incompleta", parseInt)
-  .option("--answer", "Abre o arquivo de resposta em vez do artifact")
+  .option("--artifact <id>", "Artefato: spec, plan ou tasks; padrão: próximo incompleto")
   .action(async (taskId: string, opts) => {
     try {
-      await runOpen(taskId, { stage: opts.stage, answer: opts.answer });
+      await runOpen(taskId, { artifact: opts.artifact });
     } catch (err) {
       exitWithError(err);
     }

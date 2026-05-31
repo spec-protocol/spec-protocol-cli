@@ -1,7 +1,7 @@
 {
   "name": "spec-protocol-cli",
-  "version": "0.1.0",
-  "description": "CLI do AI Spec Protocol — especificação assistida por IA antes do SDD",
+  "version": "1.0.1",
+  "description": "CLI do AI Spec Protocol — RTA / AI-ATR (Refinamento Técnico Assistido por IA) com skills e artefatos spec/plan/tasks",
   "type": "module",
   "bin": {
     "spec-protocol": "./dist/index.js"
@@ -9,6 +9,13 @@
   "files": [
     "dist",
     "templates",
+    ".agents/skills/rta-triagem/SKILL.md",
+    ".agents/skills/rta-analise/SKILL.md",
+    ".agents/skills/rta-dor/SKILL.md",
+    ".agents/skills/rta-po/SKILL.md",
+    ".agents/skills/rta-revalidacao/SKILL.md",
+    ".agents/skills/rta-plan/SKILL.md",
+    ".agents/skills/rta-excecao/SKILL.md",
     "README.md",
     "LICENSE"
   ],
@@ -24,7 +31,9 @@
   },
   "keywords": [
     "spec-protocol",
-    "aisp",
+    "ai-spec-protocol",
+    "rta",
+    "ai-atr",
     "spec-driven-development",
     "spec-kit",
     "ai-spec",

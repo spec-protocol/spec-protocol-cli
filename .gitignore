@@ -6,3 +6,8 @@ dist/
 .env
 .env.*
 *.tgz
+.agents/skills/*
+!.agents/skills/rta-*/
+!.agents/skills/rta-*/**
+.cursor/
+.docs/

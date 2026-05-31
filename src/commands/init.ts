@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { ensureDir, pathExists } from "../lib/fs.js";
 import { getProtocolRoot } from "../lib/paths.js";
 import { updateGitignore } from "../lib/gitignore.js";
+import { installRtaSkills } from "../lib/skill-install.js";
 
 export interface InitOptions {
   noGitignore?: boolean;
@@ -69,7 +70,29 @@ export async function runInit(
   await ensureDir(`${protocolRoot}/tasks`);
   await ensureDir(`${protocolRoot}/exports`);
 
-  // Atualizar .gitignore do repo alvo
+  const skillResult = await installRtaSkills(cwd);
+  if (skillResult.installed.length > 0) {
+    console.log(
+      chalk.green(
+        `✓ Skills RTA instaladas: ${skillResult.installed.join(", ")}`,
+      ),
+    );
+  }
+  if (skillResult.skipped.length > 0) {
+    console.log(
+      chalk.gray(
+        `  Skills já presentes (não sobrescritas): ${skillResult.skipped.join(", ")}`,
+      ),
+    );
+  }
+  if (skillResult.missing.length > 0) {
+    console.log(
+      chalk.yellow(
+        `⚠ Skills ausentes no pacote: ${skillResult.missing.join(", ")}`,
+      ),
+    );
+  }
+
   const gitignoreResult = await updateGitignore(cwd, options.noGitignore);
   if (gitignoreResult === "created") {
     console.log(chalk.green("✓ .gitignore criado com snippet do protocolo"));
@@ -82,7 +105,9 @@ export async function runInit(
   }
 
   console.log("");
-  console.log(chalk.green(`✓ Protocolo inicializado em ./.spec-protocol/`));
+  console.log(chalk.green(`✓ RTA inicializado em ./.spec-protocol/`));
+  console.log(chalk.green(`✓ Skills em ./.agents/skills/rta-*`));
   console.log(chalk.gray("  Próximo passo: spec-protocol new <ID-DA-TAREFA>"));
+  console.log(chalk.gray("  Na IDE: use @rta-triagem como ponto de entrada"));
   console.log("");
 }

@@ -1,23 +1,22 @@
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { STAGES, type StageDefinition } from "../constants.js";
+import { ARTIFACTS, type ArtifactDefinition } from "../constants.js";
 import { isPlaceholderOnly } from "./export-builder.js";
 import { pathExists, readTextFile } from "./fs.js";
 import { getProtocolRoot, getTaskDir } from "./paths.js";
 
-export type StageStatus = "OK" | "RASCUNHO" | "PENDENTE";
+export type ArtifactStatus = "OK" | "RASCUNHO" | "PENDENTE";
 
-export interface StageInfo {
-  stage: StageDefinition;
-  status: StageStatus;
-  artifactPath: string;
-  answerPath: string;
+export interface ArtifactInfo {
+  artifact: ArtifactDefinition;
+  status: ArtifactStatus;
+  path: string;
 }
 
 export interface TaskSummary {
   id: string;
   createdAt: Date | null;
-  stages: StageInfo[];
+  artifacts: ArtifactInfo[];
   completedCount: number;
   totalCount: number;
   percentComplete: number;
@@ -46,41 +45,42 @@ export async function getTaskIds(cwd: string = process.cwd()): Promise<string[]>
     .sort();
 }
 
-/** Retorna o status de uma etapa: OK, RASCUNHO ou PENDENTE */
-export async function getStageStatus(
+/** Retorna o status de um artefato: OK, RASCUNHO ou PENDENTE */
+export async function getArtifactStatus(
   taskDir: string,
-  stage: StageDefinition,
-): Promise<StageStatus> {
-  const answerPath = join(taskDir, "answers", stage.answer);
-  if (!(await pathExists(answerPath))) return "PENDENTE";
+  artifact: ArtifactDefinition,
+): Promise<ArtifactStatus> {
+  const filePath = join(taskDir, artifact.file);
+  if (!(await pathExists(filePath))) return "PENDENTE";
   try {
-    const content = await readTextFile(answerPath);
+    const content = await readTextFile(filePath);
     return isPlaceholderOnly(content) ? "RASCUNHO" : "OK";
   } catch {
     return "PENDENTE";
   }
 }
 
-/** Retorna info completa de todas as etapas de uma tarefa */
-export async function getAllStageInfos(taskDir: string): Promise<StageInfo[]> {
+/** Retorna info completa de todos os artefatos de uma tarefa */
+export async function getAllArtifactInfos(
+  taskDir: string,
+): Promise<ArtifactInfo[]> {
   return Promise.all(
-    STAGES.map(async (stage) => {
-      const status = await getStageStatus(taskDir, stage);
+    ARTIFACTS.map(async (artifact) => {
+      const status = await getArtifactStatus(taskDir, artifact);
       return {
-        stage,
+        artifact,
         status,
-        artifactPath: join(taskDir, "artifacts", stage.artifact),
-        answerPath: join(taskDir, "answers", stage.answer),
+        path: join(taskDir, artifact.file),
       };
     }),
   );
 }
 
-/** Retorna a primeira etapa incompleta (não OK), ou undefined se todas OK */
-export async function getNextIncompleteStage(
+/** Retorna o primeiro artefato incompleto (não OK), ou undefined se todos OK */
+export async function getNextIncompleteArtifact(
   taskDir: string,
-): Promise<StageInfo | undefined> {
-  const infos = await getAllStageInfos(taskDir);
+): Promise<ArtifactInfo | undefined> {
+  const infos = await getAllArtifactInfos(taskDir);
   return infos.find((i) => i.status !== "OK");
 }
 
@@ -90,8 +90,8 @@ export async function getTaskSummary(
   taskId: string,
 ): Promise<TaskSummary> {
   const taskDir = getTaskDir(cwd, taskId);
-  const stages = await getAllStageInfos(taskDir);
-  const completedCount = stages.filter((s) => s.status === "OK").length;
+  const artifacts = await getAllArtifactInfos(taskDir);
+  const completedCount = artifacts.filter((a) => a.status === "OK").length;
 
   let createdAt: Date | null = null;
   try {
@@ -104,9 +104,9 @@ export async function getTaskSummary(
   return {
     id: taskId,
     createdAt,
-    stages,
+    artifacts,
     completedCount,
-    totalCount: stages.length,
-    percentComplete: Math.round((completedCount / stages.length) * 100),
+    totalCount: artifacts.length,
+    percentComplete: Math.round((completedCount / artifacts.length) * 100),
   };
 }
