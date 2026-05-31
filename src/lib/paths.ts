@@ -1,6 +1,10 @@
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AGENTS_SKILLS_DIR, PROTOCOL_DIR } from "../constants.js";
+import {
+  DEFAULT_LANGUAGE,
+  type SupportedLanguage,
+} from "./i18n.js";
 
 /** Raiz do pacote npm (contém templates/ e dist/). */
 export function getPackageRoot(): string {
@@ -13,8 +17,10 @@ export function getPackageRoot(): string {
   return join(dir, "..", "..");
 }
 
-export function getTemplatesDir(): string {
-  return join(getPackageRoot(), "templates");
+export function getTemplatesDir(
+  language: SupportedLanguage = DEFAULT_LANGUAGE,
+): string {
+  return join(getPackageRoot(), "templates", language);
 }
 
 /** Pack de skills RTA embutido no pacote npm */

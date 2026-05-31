@@ -8,6 +8,16 @@ import {
 import { pathExists, readTextFile } from "../lib/fs.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
+import {
+  DEFAULT_LANGUAGE,
+  getArtifactLabel,
+  getFieldValueByKey,
+  getSectionTextByKey,
+  hasRealText,
+  normalizeStatus,
+  type SupportedLanguage,
+} from "../lib/i18n.js";
+import { readConfig } from "../lib/config.js";
 
 export interface ValidateOptions {
   json?: boolean;
@@ -37,8 +47,10 @@ export async function runValidate(
     );
   }
 
+  const config = await readConfig(cwd);
+  const language = config?.language ?? DEFAULT_LANGUAGE;
   const infos = await getAllArtifactInfos(taskDir);
-  const result = await buildValidationResult(taskId, infos, taskDir);
+  const result = await buildValidationResult(taskId, infos, taskDir, language);
 
   if (options.json) {
     console.log(JSON.stringify(result, null, 2));
@@ -53,20 +65,22 @@ async function buildValidationResult(
   taskId: string,
   infos: ArtifactInfo[],
   taskDir: string,
+  language: SupportedLanguage,
 ): Promise<ValidationResult> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
   for (const info of infos) {
     const { artifact, status } = info;
+    const label = getArtifactLabel(artifact.id, language);
 
     if (artifact.critical && status !== "OK") {
       errors.push(
-        `${artifact.file} (${artifact.name}) está ${status} — obrigatório para export`,
+        `${artifact.file} (${label}) está ${status} — obrigatório para export`,
       );
     } else if (!artifact.critical && status !== "OK") {
       warnings.push(
-        `${artifact.file} (${artifact.name}) está ${status} — recomendado`,
+        `${artifact.file} (${label}) está ${status} — recomendado`,
       );
     }
   }
@@ -78,7 +92,9 @@ async function buildValidationResult(
     validateSpecContract(spec, errors, warnings);
   }
 
-  const specStatus = spec ? normalizeStatus(getSectionText(spec, "Status de prontidão")) : "";
+  const specStatus = spec
+    ? normalizeStatus(getSectionTextByKey(spec, "spec.readinessStatus"))
+    : "";
   if (specStatus === "PRONTO" || specStatus === "EXCEÇÃO APROVADA") {
     if (plan) {
       validatePlanContract(plan, specStatus, errors);
@@ -101,27 +117,33 @@ function validateSpecContract(
   errors: string[],
   warnings: string[],
 ): void {
-  const classification = getSectionText(content, "Classificação RTA");
-  const workType = getFieldValue(classification, "Tipo de trabalho");
-  const riskLevel = getFieldValue(classification, "Nível de risco");
-  const objective = getSectionText(content, "Objetivo");
-  const status = normalizeStatus(getSectionText(content, "Status de prontidão"));
+  const classification = getSectionTextByKey(content, "spec.classification");
+  const workType = getFieldValueByKey(classification, "spec.workType");
+  const riskLevel = getFieldValueByKey(classification, "spec.riskLevel");
+  const objective = getSectionTextByKey(content, "spec.objective");
+  const status = normalizeStatus(
+    getSectionTextByKey(content, "spec.readinessStatus"),
+  );
 
-  if (!workType) errors.push("spec.md sem Tipo de trabalho preenchido");
-  if (!riskLevel) errors.push("spec.md sem Nível de risco preenchido");
-  if (!hasRealText(objective)) errors.push("spec.md sem Objetivo preenchido");
-  if (!status) errors.push("spec.md sem Status de prontidão preenchido");
+  if (!workType) errors.push("spec.md sem tipo de trabalho preenchido");
+  if (!riskLevel) errors.push("spec.md sem nível de risco preenchido");
+  if (!hasRealText(objective)) errors.push("spec.md sem objetivo preenchido");
+  if (!status) errors.push("spec.md sem status de prontidão preenchido");
 
   if (status === "EXCEÇÃO APROVADA") {
-    const decisions = getSectionText(content, "Decisões confirmadas");
+    const decisions = getSectionTextByKey(content, "spec.confirmedDecisions");
     if (!hasRealText(decisions)) {
-      errors.push("spec.md com EXCEÇÃO APROVADA sem Decisões confirmadas");
+      errors.push("spec.md com EXCEÇÃO APROVADA sem decisões confirmadas");
     }
   }
 
-  const pending = getSectionText(content, "Decisões pendentes");
-  if (pending.includes("[CRÍTICO]") && status === "PRONTO") {
-    warnings.push("spec.md está PRONTO, mas ainda contém decisão [CRÍTICO] pendente");
+  const pending = getSectionTextByKey(content, "spec.pendingDecisions", {
+    stripPlaceholders: false,
+  });
+  if (/\[CRÍTICO\]/i.test(pending) && status === "PRONTO") {
+    warnings.push(
+      "spec.md está PRONTO, mas ainda contém decisão [CRÍTICO] pendente",
+    );
   }
 }
 
@@ -130,68 +152,31 @@ function validatePlanContract(
   specStatus: string,
   errors: string[],
 ): void {
-  const decision = getSectionText(content, "Decisão final");
+  const decision = getSectionTextByKey(content, "plan.finalDecision");
   const planStatus = normalizeStatus(decision);
-  const inputs = getSectionText(content, "Insumos validados");
-  const acceptance = getSectionText(content, "Critérios de aceite finais");
+  const inputs = getSectionTextByKey(content, "plan.validatedInputs");
+  const acceptance = getSectionTextByKey(content, "plan.acceptanceCriteria");
 
-  if (!planStatus) errors.push("plan.md sem Status em Decisão final");
-  if (!hasRealText(inputs)) errors.push("plan.md sem Insumos validados");
-  if (!hasRealText(acceptance)) errors.push("plan.md sem Critérios de aceite finais");
+  if (!planStatus) errors.push("plan.md sem status em Decisão final");
+  if (!hasRealText(inputs)) errors.push("plan.md sem insumos validados");
+  if (!hasRealText(acceptance)) {
+    errors.push("plan.md sem critérios de aceite finais");
+  }
 
   if (specStatus === "EXCEÇÃO APROVADA") {
-    const exception = getSectionText(content, "Modo de exceção");
+    const exception = getSectionTextByKey(content, "plan.exceptionMode");
     if (!hasRealText(exception)) {
-      errors.push("plan.md sem Modo de exceção apesar de spec.md estar EXCEÇÃO APROVADA");
+      errors.push(
+        "plan.md sem modo de exceção apesar de spec.md estar EXCEÇÃO APROVADA",
+      );
     }
-    if (!/respons[aá]vel/i.test(exception)) {
+    if (!/respons[aá]vel|responsible/i.test(exception)) {
       errors.push("plan.md em exceção sem responsável pela decisão");
     }
-    if (!/risco/i.test(exception)) {
+    if (!/risco|risk|riesgo/i.test(exception)) {
       errors.push("plan.md em exceção sem riscos aceitos");
     }
   }
-}
-
-function getSectionText(content: string, heading: string): string {
-  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = content.match(
-    new RegExp(`^## ${escaped}\\s*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, "m"),
-  );
-  return stripPlaceholders(match?.[1] ?? "");
-}
-
-function getFieldValue(section: string, field: string): string {
-  const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = section.match(new RegExp(`^-\\s*${escaped}:[ \\t]*([^\\n]+)$`, "mi"));
-  const value = stripPlaceholders(match?.[1] ?? "").trim();
-  if (!value || value.includes("/") || value.includes("[") || value.includes("...")) {
-    return "";
-  }
-  return value;
-}
-
-function normalizeStatus(value: string): string {
-  const status = stripPlaceholders(value).toUpperCase();
-  if (status.includes("EXCEÇÃO APROVADA")) return "EXCEÇÃO APROVADA";
-  if (status.includes("EXCEÇÃO NÃO RECOMENDADA")) return "EXCEÇÃO NÃO RECOMENDADA";
-  if (status.includes("PRONTO") && !status.includes("PARCIALMENTE")) return "PRONTO";
-  if (status.includes("PARCIALMENTE PRONTO")) return "PARCIALMENTE PRONTO";
-  if (status.includes("NÃO PRONTO")) return "NÃO PRONTO";
-  return "";
-}
-
-function hasRealText(value: string): boolean {
-  const text = stripPlaceholders(value).trim();
-  return text.length > 0 && text !== "...";
-}
-
-function stripPlaceholders(value: string): string {
-  return value
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/\[[^\]]+\]/g, "")
-    .replace(/\.\.\./g, "")
-    .trim();
 }
 
 function printValidationResult(result: ValidationResult, taskId: string): void {
@@ -205,7 +190,9 @@ function printValidationResult(result: ValidationResult, taskId: string): void {
   }
 
   if (result.errors.length > 0) {
-    console.log(chalk.red(`  ✗ ${taskId} — ${result.errors.length} bloqueio(s):`));
+    console.log(
+      chalk.red(`  ✗ ${taskId} — ${result.errors.length} bloqueio(s):`),
+    );
     console.log("");
     for (const err of result.errors) {
       console.log(chalk.red(`    ✗ ${err}`));

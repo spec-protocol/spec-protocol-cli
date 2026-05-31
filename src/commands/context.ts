@@ -1,12 +1,19 @@
 import chalk from "chalk";
 import { relative } from "node:path";
 import { ARTIFACTS } from "../constants.js";
+import { readConfig } from "../lib/config.js";
 import {
   assertProtocolInitialized,
   getAllArtifactInfos,
   getNextIncompleteArtifact,
 } from "../lib/task-progress.js";
 import { pathExists, readTextFile, writeTextFile } from "../lib/fs.js";
+import {
+  DEFAULT_LANGUAGE,
+  getContextLabels,
+  hasSpecClassification,
+  type SupportedLanguage,
+} from "../lib/i18n.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
@@ -32,6 +39,9 @@ export async function runContext(
     );
   }
 
+  const config = await readConfig(cwd);
+  const language = config?.language ?? DEFAULT_LANGUAGE;
+  const labels = getContextLabels(language);
   const infos = await getAllArtifactInfos(taskDir);
 
   let targetArtifactId: string;
@@ -48,8 +58,8 @@ export async function runContext(
   } else {
     const next = await getNextIncompleteArtifact(taskDir);
     if (!next) {
-      console.log(chalk.green("  ✓ Todos os artefatos estão preenchidos!"));
-      console.log(chalk.gray(`    Próximo passo: spec-protocol validate ${taskId}`));
+      console.log(chalk.green(`  ✓ ${labels.allFilled}`));
+      console.log(chalk.gray(`    ${labels.nextValidate} ${taskId}`));
       console.log("");
       return;
     }
@@ -65,6 +75,7 @@ export async function runContext(
     allInfos: infos,
     specContent,
     cwd,
+    language,
   });
 
   if (options.save) {
@@ -90,48 +101,50 @@ function buildContextGuide(opts: {
   allInfos: Awaited<ReturnType<typeof getAllArtifactInfos>>;
   specContent: string | null;
   cwd: string;
+  language: SupportedLanguage;
 }): string {
-  const { taskId, artifact, artifactPath, allInfos, specContent, cwd } = opts;
+  const { taskId, artifact, artifactPath, allInfos, specContent, cwd, language } =
+    opts;
+  const labels = getContextLabels(language);
   const relArtifact = relative(cwd, artifactPath);
   const filledOthers = allInfos
     .filter((i) => i.artifact.id !== artifact.id && i.status === "OK")
     .map((i) => relative(cwd, i.path));
 
-  const skillHint = skillForArtifact(artifact.id, specContent);
+  const skillHint = skillForArtifact(artifact.id, specContent, language);
 
   const lines: string[] = [
-    `# Roteiro RTA — ${taskId} / ${artifact.file}`,
-    `> Gerado por spec-protocol-cli — use na IDE com skills RTA`,
+    `# ${labels.title} — ${taskId} / ${artifact.file}`,
+    `> ${labels.generatedBy}`,
     "",
-    "## 1. Skill recomendada",
+    `## ${labels.skillSection}`,
     "",
-    `- **Ponto de entrada:** \`@rta-triagem\``,
-    `- **Para este artefato:** \`${skillHint}\``,
+    `- **${labels.entryPoint}:** \`@rta-triagem\``,
+    `- **${labels.forArtifact}:** \`${skillHint}\``,
     "",
-    "## 2. Arquivos a referenciar com @",
+    `## ${labels.filesSection}`,
     "",
-    `- **Artefato alvo:** \`@${relArtifact}\``,
+    `- **${labels.targetArtifact}:** \`@${relArtifact}\``,
   ];
 
   if (filledOthers.length > 0) {
-    lines.push("- **Outros artefatos já preenchidos:**");
+    lines.push(`- **${labels.otherArtifacts}:**`);
     for (const p of filledOthers) {
       lines.push(`  - \`@${p}\``);
     }
   }
 
+  lines.push("", `## ${labels.instructionSection}`, "");
+  for (const paragraph of labels.instructionBody) {
+    lines.push(paragraph);
+  }
+  lines.push(labels.copyOutput.replace("{artifact}", `\`${relArtifact}\``), "");
+
   lines.push(
-    "",
-    "## 3. Instrução",
-    "",
-    "Cole o card do Jira no chat. Invoque a skill RTA indicada acima.",
-    "A skill orienta análise, preserva decisões já registradas e sugere conteúdo copiável para o artefato.",
-    "Copie/refine a saída em `" + relArtifact + "`.",
-    "",
-    "## 4. Depois",
+    `## ${labels.afterSection}`,
     "",
     `\`spec-protocol status ${taskId}\``,
-    `\`spec-protocol validate ${taskId}\` (quando spec.md e plan.md estiverem OK)`,
+    `\`spec-protocol validate ${taskId}\` ${labels.validateWhenReady}`,
   );
 
   return lines.join("\n");
@@ -145,24 +158,23 @@ async function readOptional(path: string): Promise<string | null> {
   }
 }
 
-function skillForArtifact(id: string, specContent: string | null): string {
+function skillForArtifact(
+  id: string,
+  specContent: string | null,
+  language: SupportedLanguage,
+): string {
+  const hints = getContextLabels(language).skillHints;
+
   switch (id) {
     case "spec":
-      return hasClassification(specContent)
-        ? "@rta-analise → @rta-dor (spec.md já tem classificação)"
-        : "@rta-triagem (spec.md ainda sem classificação)";
+      return hasSpecClassification(specContent)
+        ? hints.specWithClassification
+        : hints.specNoClassification;
     case "plan":
-      return "@rta-plan (somente se spec.md estiver PRONTO ou EXCEÇÃO APROVADA)";
+      return hints.plan;
     case "tasks":
-      return "@rta-plan (somente após plan.md e spec.md prontos)";
+      return hints.tasks;
     default:
       return "@rta-triagem";
   }
-}
-
-function hasClassification(specContent: string | null): boolean {
-  if (!specContent) return false;
-  const type = specContent.match(/Tipo de trabalho:\s*([^\n<]+)/i)?.[1]?.trim();
-  const risk = specContent.match(/Nível de risco:\s*([^\n<]+)/i)?.[1]?.trim();
-  return Boolean(type && risk);
 }

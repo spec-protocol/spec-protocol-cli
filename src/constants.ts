@@ -20,7 +20,6 @@ export type IdeOption = (typeof IDE_OPTIONS)[number];
 export interface ArtifactDefinition {
   id: "spec" | "plan" | "tasks";
   file: string;
-  name: string;
   /** Bloqueia export se não preenchido */
   critical: boolean;
 }
@@ -29,19 +28,16 @@ export const ARTIFACTS: ArtifactDefinition[] = [
   {
     id: "spec",
     file: "spec.md",
-    name: "Especificação consolidada",
     critical: true,
   },
   {
     id: "plan",
     file: "plan.md",
-    name: "Plano técnico",
     critical: true,
   },
   {
     id: "tasks",
     file: "tasks.md",
-    name: "Checklist de implementação",
     critical: false,
   },
 ];

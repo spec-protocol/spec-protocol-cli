@@ -97,7 +97,7 @@ O executável da CLI responde pelo comando `spec-protocol`.
 
 | Comando | Descrição |
 | :--- | :--- |
-| `spec-protocol init [--no-gitignore]` | Inicializa `.spec-protocol/` e instala skills RTA em `.agents/skills/` |
+| `spec-protocol init [--no-gitignore]` | Inicializa `.spec-protocol/`, instala skills RTA e pergunta idioma (`pt-BR`, `en`, `es`) |
 | `spec-protocol new <task-id>` | Cria `spec.md`, `plan.md` e `tasks.md` |
 | `spec-protocol list` | Lista tarefas e progresso dos artefatos |
 | `spec-protocol status <task-id>` | Exibe painel de preenchimento dos artefatos |
@@ -116,6 +116,7 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 {
   "squad": "Nome da Squad",
   "ide": "Cursor",
+  "language": "pt-BR",
   "specKit": {
     "command": "specify",
     "args": []
@@ -126,7 +127,15 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 
 - `squad`: nome da squad que assina as especificações geradas.
 - `ide`: editor preferencial de desenvolvimento (`Cursor`, `VS Code`, `JetBrains`, `Outro`).
+- `language`: idioma do projeto (`pt-BR`, `en`, `es`). Escolhido no `init`. Projetos antigos sem esse campo usam fallback `pt-BR`.
 - `specKit`: executável e argumentos para rodar o Spec-Kit.
+
+### Idiomas (i18n)
+
+- No `init`, escolha entre **Português (Brasil)**, **English** ou **Español**.
+- A escolha afeta templates gerados por `new`, roteiros do `context`, labels do `export`, labels de artefatos e instrução de idioma nas skills instaladas.
+- Nomes técnicos permanecem iguais: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
+- A primeira versão **não** localiza todas as mensagens da CLI; troca de idioma após o `init` fica fora do escopo inicial.
 
 ### Desenvolvimento local
 
@@ -234,7 +243,7 @@ The CLI executable is `spec-protocol`.
 
 | Command | Description |
 | :--- | :--- |
-| `spec-protocol init [--no-gitignore]` | Initializes `.spec-protocol/` and installs RTA skills in `.agents/skills/` |
+| `spec-protocol init [--no-gitignore]` | Initializes `.spec-protocol/`, installs RTA skills, and prompts for language (`pt-BR`, `en`, `es`) |
 | `spec-protocol new <task-id>` | Creates `spec.md`, `plan.md`, and `tasks.md` |
 | `spec-protocol list` | Lists tasks and artifact progress |
 | `spec-protocol status <task-id>` | Shows artifact completion status |
@@ -253,6 +262,7 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 {
   "squad": "Team Name",
   "ide": "Cursor",
+  "language": "en",
   "specKit": {
     "command": "specify",
     "args": []
@@ -263,7 +273,15 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 
 - `squad`: team responsible for the generated specifications.
 - `ide`: preferred development editor (`Cursor`, `VS Code`, `JetBrains`, `Other`).
+- `language`: project language (`pt-BR`, `en`, `es`). Selected during `init`. Legacy configs without this field fall back to `pt-BR`.
 - `specKit`: executable and arguments used to run Spec-Kit.
+
+### Languages (i18n)
+
+- During `init`, choose **Português (Brasil)**, **English**, or **Español**.
+- The choice affects templates created by `new`, `context` guides, `export` labels, artifact labels, and language instructions injected into installed skills.
+- Technical names stay unchanged: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
+- The first version does **not** localize all CLI messages; changing language after `init` is out of initial scope.
 
 ### Local development
 
@@ -371,7 +389,7 @@ El ejecutable de la CLI es `spec-protocol`.
 
 | Comando | Descripción |
 | :--- | :--- |
-| `spec-protocol init [--no-gitignore]` | Inicializa `.spec-protocol/` y instala skills RTA en `.agents/skills/` |
+| `spec-protocol init [--no-gitignore]` | Inicializa `.spec-protocol/`, instala skills RTA y pregunta idioma (`pt-BR`, `en`, `es`) |
 | `spec-protocol new <task-id>` | Crea `spec.md`, `plan.md` y `tasks.md` |
 | `spec-protocol list` | Lista demandas y progreso de artefactos |
 | `spec-protocol status <task-id>` | Muestra estado de completitud de los artefactos |
@@ -390,6 +408,7 @@ Después de `init`, la CLI crea `.spec-protocol/config.json`:
 {
   "squad": "Nombre del equipo",
   "ide": "Cursor",
+  "language": "es",
   "specKit": {
     "command": "specify",
     "args": []
@@ -400,7 +419,15 @@ Después de `init`, la CLI crea `.spec-protocol/config.json`:
 
 - `squad`: equipo responsable por las especificaciones generadas.
 - `ide`: editor preferido (`Cursor`, `VS Code`, `JetBrains`, `Otro`).
+- `language`: idioma del proyecto (`pt-BR`, `en`, `es`). Elegido en `init`. Proyectos antiguos sin este campo usan fallback `pt-BR`.
 - `specKit`: ejecutable y argumentos para ejecutar Spec-Kit.
+
+### Idiomas (i18n)
+
+- En `init`, elija **Português (Brasil)**, **English** o **Español**.
+- La elección afecta templates de `new`, guías de `context`, labels de `export`, labels de artefactos e instrucciones de idioma en skills instaladas.
+- Los nombres técnicos permanecen iguales: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
+- La primera versión **no** localiza todos los mensajes de la CLI; cambiar idioma después de `init` queda fuera del alcance inicial.
 
 ### Desarrollo local
 

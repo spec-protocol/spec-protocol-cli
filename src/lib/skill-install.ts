@@ -1,6 +1,11 @@
 import { join } from "node:path";
 import { RTA_SKILL_DIRS } from "../constants.js";
-import { copyDirRecursive, pathExists } from "./fs.js";
+import {
+  DEFAULT_LANGUAGE,
+  injectSkillLanguageInstruction,
+  type SupportedLanguage,
+} from "./i18n.js";
+import { copyDirRecursive, pathExists, readTextFile, writeTextFile } from "./fs.js";
 import { getAgentsSkillsDir, getSkillPackDir } from "./paths.js";
 
 export interface SkillInstallResult {
@@ -12,6 +17,7 @@ export interface SkillInstallResult {
 /** Copia skills RTA do pacote para .agents/skills no projeto alvo. Idempotente. */
 export async function installRtaSkills(
   cwd: string = process.cwd(),
+  language: SupportedLanguage = DEFAULT_LANGUAGE,
 ): Promise<SkillInstallResult> {
   const packDir = getSkillPackDir();
   const targetSkillsDir = getAgentsSkillsDir(cwd);
@@ -41,6 +47,16 @@ export async function installRtaSkills(
     }
 
     await copyDirRecursive(source, target);
+
+    const installedSkill = await readTextFile(skillFile);
+    const localizedSkill = injectSkillLanguageInstruction(
+      installedSkill,
+      language,
+    );
+    if (localizedSkill !== installedSkill) {
+      await writeTextFile(skillFile, localizedSkill);
+    }
+
     result.installed.push(skillDir);
   }
 

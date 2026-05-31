@@ -2,6 +2,11 @@ import { join } from "node:path";
 import { ARTIFACTS } from "../constants.js";
 import { readTextFile } from "./fs.js";
 import type { ProtocolConfig } from "./config.js";
+import {
+  DEFAULT_LANGUAGE,
+  getArtifactLabel,
+  getExportLabels,
+} from "./i18n.js";
 
 function isPlaceholderOnly(content: string): boolean {
   const stripped = content
@@ -15,9 +20,9 @@ function isPlaceholderOnly(content: string): boolean {
   return stripped.length === 0;
 }
 
-function section(title: string, body: string | null): string {
+function section(title: string, body: string | null, emptyLabel: string): string {
   if (!body || isPlaceholderOnly(body)) {
-    return `## ${title}\n\n_(sem conteúdo preenchido)_\n`;
+    return `## ${title}\n\n${emptyLabel}\n`;
   }
   return `## ${title}\n\n${body.trim()}\n`;
 }
@@ -39,6 +44,8 @@ export async function buildSpecKitInput(options: {
   config: ProtocolConfig | null;
 }): Promise<string> {
   const { taskId, taskDir, config } = options;
+  const language = config?.language ?? DEFAULT_LANGUAGE;
+  const labels = getExportLabels(language);
   const exportedAt = new Date().toISOString();
 
   const spec = await readArtifact(taskDir, "spec.md");
@@ -46,43 +53,43 @@ export async function buildSpecKitInput(options: {
   const tasks = await readArtifact(taskDir, "tasks.md");
 
   const meta = [
-    "# Spec-Kit Input — RTA / AI Spec Protocol",
+    `# ${labels.title}`,
     "",
-    "## Metadados",
+    `## ${labels.metadata}`,
     "",
-    `- **Tarefa:** ${taskId}`,
-    `- **Squad:** ${config?.squad ?? "—"}`,
-    `- **IDE:** ${config?.ide ?? "—"}`,
-    `- **Exportado em:** ${exportedAt}`,
+    `- **${labels.task}:** ${taskId}`,
+    `- **${labels.squad}:** ${config?.squad ?? "—"}`,
+    `- **${labels.ide}:** ${config?.ide ?? "—"}`,
+    `- **${labels.exportedAt}:** ${exportedAt}`,
     "",
   ].join("\n");
 
   const parts = [
     meta,
-    section("Especificação consolidada (spec.md)", spec),
-    section("Plano técnico (plan.md)", plan),
-    section("Checklist de implementação (tasks.md)", tasks),
-    "## Anexo — Artefatos completos",
+    section(labels.specSection, spec, labels.emptySection),
+    section(labels.planSection, plan, labels.emptySection),
+    section(labels.tasksSection, tasks, labels.emptySection),
+    `## ${labels.appendix}`,
     "",
   ];
 
   for (const artifact of ARTIFACTS) {
     const content = await readArtifact(taskDir, artifact.file);
-    parts.push(`### ${artifact.name} — ${artifact.file}`);
+    parts.push(
+      `### ${getArtifactLabel(artifact.id, language)} — ${artifact.file}`,
+    );
     parts.push("");
     if (content && !isPlaceholderOnly(content)) {
       parts.push(content.trim());
     } else {
-      parts.push("_(não preenchido)_");
+      parts.push(labels.notFilled);
     }
     parts.push("");
   }
 
   parts.push("---");
   parts.push("");
-  parts.push(
-    "_Gerado por spec-protocol export. Use como insumo para GitHub Spec-Kit._",
-  );
+  parts.push(labels.footer);
 
   return parts.join("\n");
 }

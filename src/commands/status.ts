@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { ARTIFACTS } from "../constants.js";
+import { readConfig } from "../lib/config.js";
 import {
   assertProtocolInitialized,
   getAllArtifactInfos,
@@ -7,6 +8,7 @@ import {
   type ArtifactStatus,
 } from "../lib/task-progress.js";
 import { pathExists } from "../lib/fs.js";
+import { DEFAULT_LANGUAGE, getArtifactLabel } from "../lib/i18n.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
@@ -26,6 +28,8 @@ export async function runStatus(
     );
   }
 
+  const config = await readConfig(cwd);
+  const language = config?.language ?? DEFAULT_LANGUAGE;
   const infos = await getAllArtifactInfos(taskDir);
   const completedCount = infos.filter((i) => i.status === "OK").length;
 
@@ -38,7 +42,7 @@ export async function runStatus(
   console.log("");
 
   for (const info of infos) {
-    printArtifactRow(info, cwd);
+    printArtifactRow(info, cwd, language);
   }
 
   console.log("");
@@ -46,15 +50,20 @@ export async function runStatus(
   console.log("");
 }
 
-function printArtifactRow(info: ArtifactInfo, cwd: string): void {
+function printArtifactRow(
+  info: ArtifactInfo,
+  cwd: string,
+  language: typeof DEFAULT_LANGUAGE,
+): void {
   const { artifact, status, path } = info;
   const icon = statusIcon(status);
   const label = statusLabel(status);
   const relPath = path.replace(cwd + "/", "");
   const critical = artifact.critical ? chalk.gray(" [crítico]") : "";
+  const artifactLabel = getArtifactLabel(artifact.id, language);
 
   console.log(
-    `  ${icon} ${chalk.bold(artifact.file)} — ${artifact.name}${critical}  ${label}`,
+    `  ${icon} ${chalk.bold(artifact.file)} — ${artifactLabel}${critical}  ${label}`,
   );
   console.log(`     ${chalk.dim(relPath)}`);
   console.log("");

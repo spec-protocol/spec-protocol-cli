@@ -1,6 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { getConfigPath } from "./paths.js";
 import type { IdeOption } from "../constants.js";
+import {
+  DEFAULT_LANGUAGE,
+  resolveLanguage,
+  type SupportedLanguage,
+} from "./i18n.js";
 
 export interface SpecKitConfig {
   command: string;
@@ -10,6 +15,7 @@ export interface SpecKitConfig {
 export interface ProtocolConfig {
   squad: string;
   ide: IdeOption | string;
+  language: SupportedLanguage;
   specKit: SpecKitConfig;
   createdAt: string;
 }
@@ -20,7 +26,14 @@ export async function readConfig(
   const configPath = getConfigPath(cwd);
   try {
     const raw = await readFile(configPath, "utf-8");
-    return JSON.parse(raw) as ProtocolConfig;
+    const parsed = JSON.parse(raw) as Partial<ProtocolConfig>;
+    return {
+      squad: parsed.squad ?? "Squad",
+      ide: parsed.ide ?? "Cursor",
+      language: resolveLanguage(parsed.language),
+      specKit: parsed.specKit ?? { command: "specify", args: [] },
+      createdAt: parsed.createdAt ?? new Date().toISOString(),
+    };
   } catch {
     return null;
   }
@@ -37,10 +50,12 @@ export async function writeConfig(
 export function defaultConfig(
   squad: string,
   ide: string,
+  language: SupportedLanguage = DEFAULT_LANGUAGE,
 ): ProtocolConfig {
   return {
     squad,
     ide,
+    language,
     specKit: {
       command: "specify",
       args: [],

@@ -12,6 +12,7 @@ import {
   getTemplatesDir,
 } from "../lib/paths.js";
 import { LEGACY_PROTOCOL_DIR, RTA_SKILL_DIRS } from "../constants.js";
+import { SUPPORTED_LANGUAGES } from "../lib/i18n.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -129,19 +130,25 @@ async function checkConfigJson(cwd: string): Promise<CheckResult> {
 }
 
 async function checkArtifactTemplates(): Promise<CheckResult> {
-  const templatesDir = getTemplatesDir();
   const required = ["spec.md", "plan.md", "tasks.md"];
   const missing: string[] = [];
-  for (const file of required) {
-    if (!(await pathExists(join(templatesDir, file)))) {
-      missing.push(file);
+
+  for (const language of SUPPORTED_LANGUAGES) {
+    const templatesDir = getTemplatesDir(language);
+    for (const file of required) {
+      if (!(await pathExists(join(templatesDir, file)))) {
+        missing.push(`${language}/${file}`);
+      }
     }
   }
+
   const ok = missing.length === 0;
   return {
-    label: "templates artefatos v2",
+    label: "templates artefatos i18n",
     ok,
-    message: ok ? "spec/plan/tasks OK" : `faltam: ${missing.join(", ")}`,
+    message: ok
+      ? "pt-BR/en/es spec/plan/tasks OK"
+      : `faltam: ${missing.join(", ")}`,
     action: ok ? undefined : "Reinstale: npm install -g spec-protocol-cli",
     blocking: true,
   };

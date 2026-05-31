@@ -8,6 +8,11 @@ import { ensureDir, pathExists } from "../lib/fs.js";
 import { getProtocolRoot } from "../lib/paths.js";
 import { updateGitignore } from "../lib/gitignore.js";
 import { installRtaSkills } from "../lib/skill-install.js";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_PROMPT_OPTIONS,
+  type SupportedLanguage,
+} from "../lib/i18n.js";
 
 export interface InitOptions {
   noGitignore?: boolean;
@@ -56,7 +61,16 @@ export async function runInit(
       choices: IDE_OPTIONS.map((name) => ({ name, value: name })),
     });
 
-    config = defaultConfig(squad.trim(), ide);
+    const language = await select({
+      message: "Idioma / Language / Idioma:",
+      choices: LANGUAGE_PROMPT_OPTIONS.map((option) => ({
+        name: option.name,
+        value: option.value,
+      })),
+      default: DEFAULT_LANGUAGE,
+    });
+
+    config = defaultConfig(squad.trim(), ide, language as SupportedLanguage);
     await ensureDir(protocolRoot);
     await writeConfig(config, cwd);
 
@@ -65,12 +79,14 @@ export async function runInit(
       chalk.green(`✓ Squad configurada: ${chalk.bold(config.squad)}`),
     );
     console.log(chalk.green(`✓ IDE: ${config.ide}`));
+    console.log(chalk.green(`✓ Idioma: ${config.language}`));
   }
 
   await ensureDir(`${protocolRoot}/tasks`);
   await ensureDir(`${protocolRoot}/exports`);
 
-  const skillResult = await installRtaSkills(cwd);
+  const language = config?.language ?? DEFAULT_LANGUAGE;
+  const skillResult = await installRtaSkills(cwd, language);
   if (skillResult.installed.length > 0) {
     console.log(
       chalk.green(

@@ -1,15 +1,22 @@
 import chalk from "chalk";
 import { join } from "node:path";
 import { ARTIFACTS } from "../constants.js";
+import { readConfig } from "../lib/config.js";
 import { pathExists, ensureDir, readTextFile, writeTextFile } from "../lib/fs.js";
+import {
+  DEFAULT_LANGUAGE,
+  getArtifactLabel,
+  type SupportedLanguage,
+} from "../lib/i18n.js";
 import { getProtocolRoot, getTaskDir, getTemplatesDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
 async function loadArtifactTemplate(
   filename: string,
   taskId: string,
+  language: SupportedLanguage,
 ): Promise<string> {
-  const templatePath = join(getTemplatesDir(), filename);
+  const templatePath = join(getTemplatesDir(language), filename);
   if (!(await pathExists(templatePath))) {
     throw new Error(`Template não encontrado: ${templatePath}`);
   }
@@ -33,12 +40,15 @@ export async function runNew(
     );
   }
 
+  const config = await readConfig(cwd);
+  const language = config?.language ?? DEFAULT_LANGUAGE;
+
   const taskDir = getTaskDir(cwd, taskId);
   if (await pathExists(taskDir)) {
     throw new Error(`Tarefa "${taskId}" já existe em .spec-protocol/tasks/${taskId}`);
   }
 
-  const templatesDir = getTemplatesDir();
+  const templatesDir = getTemplatesDir(language);
   if (!(await pathExists(templatesDir))) {
     throw new Error(`Templates não encontrados em: ${templatesDir}`);
   }
@@ -46,13 +56,17 @@ export async function runNew(
   await ensureDir(taskDir);
 
   for (const artifact of ARTIFACTS) {
-    const content = await loadArtifactTemplate(artifact.file, taskId);
+    const content = await loadArtifactTemplate(artifact.file, taskId, language);
     await writeTextFile(join(taskDir, artifact.file), content);
   }
 
   console.log(chalk.green(`✓ Tarefa criada: .spec-protocol/tasks/${taskId}/`));
   for (const artifact of ARTIFACTS) {
-    console.log(chalk.gray(`  ${artifact.file} — ${artifact.name}`));
+    console.log(
+      chalk.gray(
+        `  ${artifact.file} — ${getArtifactLabel(artifact.id, language)}`,
+      ),
+    );
   }
   console.log("");
   console.log(chalk.gray("  Na IDE: @rta-triagem com o card do Jira"));
