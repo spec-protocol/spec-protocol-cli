@@ -2,11 +2,7 @@ import { join } from "node:path";
 import { ARTIFACTS } from "../constants.js";
 import { readTextFile } from "./fs.js";
 import type { ProtocolConfig } from "./config.js";
-import {
-  DEFAULT_LANGUAGE,
-  getArtifactLabel,
-  getExportLabels,
-} from "./i18n.js";
+import { getArtifactLabel, getExportLabels } from "./i18n.js";
 
 function isPlaceholderOnly(content: string): boolean {
   const stripped = content
@@ -44,8 +40,7 @@ export async function buildSpecKitInput(options: {
   config: ProtocolConfig | null;
 }): Promise<string> {
   const { taskId, taskDir, config } = options;
-  const language = config?.language ?? DEFAULT_LANGUAGE;
-  const labels = getExportLabels(language);
+  const labels = getExportLabels();
   const exportedAt = new Date().toISOString();
 
   const spec = await readArtifact(taskDir, "spec.md");
@@ -76,7 +71,7 @@ export async function buildSpecKitInput(options: {
   for (const artifact of ARTIFACTS) {
     const content = await readArtifact(taskDir, artifact.file);
     parts.push(
-      `### ${getArtifactLabel(artifact.id, language)} — ${artifact.file}`,
+      `### ${getArtifactLabel(artifact.id)} — ${artifact.file}`,
     );
     parts.push("");
     if (content && !isPlaceholderOnly(content)) {

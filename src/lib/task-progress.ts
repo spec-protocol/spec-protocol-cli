@@ -29,7 +29,7 @@ export async function assertProtocolInitialized(
   const root = getProtocolRoot(cwd);
   if (!(await pathExists(root))) {
     throw new Error(
-      "Protocolo não inicializado. Execute: spec-protocol init",
+      "Protocol not initialized. Run: spec-protocol init",
     );
   }
 }

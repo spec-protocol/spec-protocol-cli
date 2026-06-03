@@ -16,15 +16,13 @@ const program = new Command();
 
 program
   .name("spec-protocol")
-  .description("RTA — Refinamento Técnico Assistido por IA")
-  .version("0.2.0");
-
-// ─── v0.1 ────────────────────────────────────────────────────────────────────
+  .description("AI Spec Protocol — assisted technical refinement")
+  .version("0.3.0");
 
 program
   .command("init")
-  .description("Inicializa RTA: .spec-protocol + skills em .agents/skills")
-  .option("--no-gitignore", "Pula a atualização do .gitignore")
+  .description("Initialize .spec-protocol/ and install Spec Protocol skills")
+  .option("--no-gitignore", "Skip .gitignore update")
   .action(async (opts) => {
     try {
       await runInit(process.cwd(), { noGitignore: !opts.gitignore });
@@ -35,8 +33,8 @@ program
 
 program
   .command("new")
-  .description("Cria spec.md, plan.md e tasks.md para uma tarefa")
-  .argument("<task-id>", "ID da tarefa (ex.: JIRA-123)")
+  .description("Create spec.md, plan.md, and tasks.md for a task")
+  .argument("<task-id>", "Task ID (e.g. JIRA-123)")
   .action(async (taskId: string) => {
     try {
       await runNew(taskId);
@@ -47,8 +45,8 @@ program
 
 program
   .command("export")
-  .description("Gera spec-kit-input.md consolidado para o Spec-Kit")
-  .argument("<task-id>", "ID da tarefa")
+  .description("Generate consolidated spec-kit-input.md for Spec-Kit")
+  .argument("<task-id>", "Task ID")
   .action(async (taskId: string) => {
     try {
       await runExport(taskId);
@@ -59,8 +57,8 @@ program
 
 program
   .command("run-spec")
-  .description("Executa o CLI do Spec-Kit (specify) com o export da tarefa")
-  .argument("<task-id>", "ID da tarefa")
+  .description("Run Spec-Kit (specify) with the task export")
+  .argument("<task-id>", "Task ID")
   .action(async (taskId: string) => {
     try {
       const code = await runRunSpec(taskId);
@@ -70,11 +68,9 @@ program
     }
   });
 
-// ─── v1.1 ────────────────────────────────────────────────────────────────────
-
 program
   .command("list")
-  .description("Lista todas as tarefas em .spec-protocol/tasks/")
+  .description("List all tasks in .spec-protocol/tasks/")
   .action(async () => {
     try {
       await runList();
@@ -85,8 +81,8 @@ program
 
 program
   .command("status")
-  .description("Exibe progresso dos artefatos spec/plan/tasks")
-  .argument("<task-id>", "ID da tarefa")
+  .description("Show spec/plan/tasks artifact progress")
+  .argument("<task-id>", "Task ID")
   .action(async (taskId: string) => {
     try {
       await runStatus(taskId);
@@ -97,9 +93,9 @@ program
 
 program
   .command("validate")
-  .description("Valida artefatos críticos antes do export (exit 0/1 — CI)")
-  .argument("<task-id>", "ID da tarefa")
-  .option("--json", "Saída em JSON para integração com CI/scripts")
+  .description("Validate critical artifacts before export (exit 0/1 — CI)")
+  .argument("<task-id>", "Task ID")
+  .option("--json", "JSON output for CI/scripts")
   .action(async (taskId: string, opts) => {
     try {
       const code = await runValidate(taskId, { json: opts.json });
@@ -111,7 +107,7 @@ program
 
 program
   .command("doctor")
-  .description("Health check do ambiente e do projeto")
+  .description("Health check for environment and project")
   .action(async () => {
     try {
       await runDoctor();
@@ -122,10 +118,10 @@ program
 
 program
   .command("context")
-  .description("Gera roteiro RTA com skills e artefatos para a IDE")
-  .argument("<task-id>", "ID da tarefa")
-  .option("--artifact <id>", "Artefato: spec, plan ou tasks; padrão: próximo incompleto")
-  .option("--save", "Salva em context-{artifact}.md na pasta da tarefa")
+  .description("Generate IDE guide with skills and artifacts")
+  .argument("<task-id>", "Task ID")
+  .option("--artifact <id>", "Artifact: spec, plan, or tasks; default: next incomplete")
+  .option("--save", "Save to context-{artifact}.md in the task folder")
   .action(async (taskId: string, opts) => {
     try {
       await runContext(taskId, { artifact: opts.artifact, save: opts.save });
@@ -136,9 +132,9 @@ program
 
 program
   .command("open")
-  .description("Abre spec.md, plan.md ou tasks.md no editor (Cursor, VS Code…)")
-  .argument("<task-id>", "ID da tarefa")
-  .option("--artifact <id>", "Artefato: spec, plan ou tasks; padrão: próximo incompleto")
+  .description("Open spec.md, plan.md, or tasks.md in the editor")
+  .argument("<task-id>", "Task ID")
+  .option("--artifact <id>", "Artifact: spec, plan, or tasks; default: next incomplete")
   .action(async (taskId: string, opts) => {
     try {
       await runOpen(taskId, { artifact: opts.artifact });
@@ -146,8 +142,6 @@ program
       exitWithError(err);
     }
   });
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function exitWithError(err: unknown): never {
   const message = err instanceof Error ? err.message : String(err);

@@ -30,7 +30,7 @@ export async function runOpen(
   const taskDir = getTaskDir(cwd, taskId);
   if (!(await pathExists(taskDir))) {
     throw new Error(
-      `Tarefa "${taskId}" não encontrada. Execute: spec-protocol new ${taskId}`,
+      `Task "${taskId}" not found. Run: spec-protocol new ${taskId}`,
     );
   }
 
@@ -42,7 +42,7 @@ export async function runOpen(
     );
     if (!found) {
       throw new Error(
-        `Artefato inválido: ${options.artifact}. Use: spec, plan, tasks`,
+        `Invalid artifact: ${options.artifact}. Use: spec, plan, tasks`,
       );
     }
     filePath = `${taskDir}/${found.file}`;
@@ -56,11 +56,11 @@ export async function runOpen(
   }
 
   if (!(await pathExists(filePath))) {
-    throw new Error(`Arquivo não encontrado: ${filePath}`);
+    throw new Error(`File not found: ${filePath}`);
   }
 
   const editor = await detectEditor();
-  console.log(chalk.gray(`  Abrindo com ${editor}: ${filePath}`));
+  console.log(chalk.gray(`  Opening with ${editor}: ${filePath}`));
 
   await openWithEditor(editor, filePath);
 }

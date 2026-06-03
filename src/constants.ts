@@ -1,6 +1,6 @@
 export const PROTOCOL_DIR = ".spec-protocol";
 
-/** Pasta legada (pré-migração), sem ponto inicial. */
+/** Legacy folder (pre-migration), no leading dot. */
 export const LEGACY_PROTOCOL_DIR = "spec-protocol";
 
 export const AGENTS_DIR = ".agents";
@@ -12,7 +12,7 @@ export const IDE_OPTIONS = [
   "Cursor",
   "VS Code",
   "JetBrains",
-  "Outro",
+  "Other",
 ] as const;
 
 export type IdeOption = (typeof IDE_OPTIONS)[number];
@@ -20,7 +20,7 @@ export type IdeOption = (typeof IDE_OPTIONS)[number];
 export interface ArtifactDefinition {
   id: "spec" | "plan" | "tasks";
   file: string;
-  /** Bloqueia export se não preenchido */
+  /** Blocks export when not filled */
   critical: boolean;
 }
 
@@ -42,13 +42,13 @@ export const ARTIFACTS: ArtifactDefinition[] = [
   },
 ];
 
-/** Skills RTA instaladas em .agents/skills pelo init */
-export const RTA_SKILL_DIRS = [
-  "rta-triagem",
-  "rta-analise",
-  "rta-dor",
-  "rta-po",
-  "rta-revalidacao",
-  "rta-plan",
-  "rta-excecao",
+/** Skills installed in .agents/skills by init */
+export const SPEC_PROTOCOL_SKILL_DIRS = [
+  "spec-protocol-triage",
+  "spec-protocol-analyze",
+  "spec-protocol-dor",
+  "spec-protocol-po",
+  "spec-protocol-revalidate",
+  "spec-protocol-plan",
+  "spec-protocol-exception",
 ] as const;

@@ -4,7 +4,7 @@ import chalk from "chalk";
 import stringWidth from "string-width";
 
 const LOGO_TEXT = "AISP";
-const SUBTITLE = "AI Spec Protocol – Especificação Assistida por IA";
+const SUBTITLE = "AI Spec Protocol — Assisted Specification";
 const HINT = "Run 'spec-protocol --help' for usage information";
 
 function centerLine(text: string, width: number): string {

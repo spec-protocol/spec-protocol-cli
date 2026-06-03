@@ -10,7 +10,6 @@ import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 import {
   DECISION_TAGS,
-  DEFAULT_LANGUAGE,
   EXCEPTION_CHECKS,
   getArtifactLabel,
   getFieldValueByKey,
@@ -18,10 +17,8 @@ import {
   getValidateLabels,
   hasRealText,
   normalizeStatus,
-  type SupportedLanguage,
   type ValidateLabels,
 } from "../lib/i18n.js";
-import { readConfig } from "../lib/config.js";
 
 export interface ValidateOptions {
   json?: boolean;
@@ -47,21 +44,13 @@ export async function runValidate(
   const taskDir = getTaskDir(cwd, taskId);
   if (!(await pathExists(taskDir))) {
     throw new Error(
-      `Tarefa "${taskId}" não encontrada. Execute: spec-protocol new ${taskId}`,
+      `Task "${taskId}" not found. Run: spec-protocol new ${taskId}`,
     );
   }
 
-  const config = await readConfig(cwd);
-  const language = config?.language ?? DEFAULT_LANGUAGE;
-  const labels = getValidateLabels(language);
+  const labels = getValidateLabels();
   const infos = await getAllArtifactInfos(taskDir);
-  const result = await buildValidationResult(
-    taskId,
-    infos,
-    taskDir,
-    language,
-    labels,
-  );
+  const result = await buildValidationResult(taskId, infos, taskDir, labels);
 
   if (options.json) {
     console.log(JSON.stringify(result, null, 2));
@@ -76,7 +65,6 @@ async function buildValidationResult(
   taskId: string,
   infos: ArtifactInfo[],
   taskDir: string,
-  language: SupportedLanguage,
   labels: ValidateLabels,
 ): Promise<ValidationResult> {
   const errors: string[] = [];
@@ -84,7 +72,7 @@ async function buildValidationResult(
 
   for (const info of infos) {
     const { artifact, status } = info;
-    const label = getArtifactLabel(artifact.id, language);
+    const label = getArtifactLabel(artifact.id);
 
     if (artifact.critical && status !== "OK") {
       errors.push(labels.artifactCritical(artifact.file, label, status));
@@ -103,7 +91,7 @@ async function buildValidationResult(
   const specStatus = spec
     ? normalizeStatus(getSectionTextByKey(spec, "spec.readinessStatus"))
     : "";
-  if (specStatus === "PRONTO" || specStatus === "EXCEÇÃO APROVADA") {
+  if (specStatus === "READY" || specStatus === "EXCEPTION APPROVED") {
     if (plan) {
       validatePlanContract(plan, specStatus, errors, labels);
     }
@@ -139,7 +127,7 @@ function validateSpecContract(
   if (!hasRealText(objective)) errors.push(labels.specNoObjective);
   if (!status) errors.push(labels.specNoReadinessStatus);
 
-  if (status === "EXCEÇÃO APROVADA") {
+  if (status === "EXCEPTION APPROVED") {
     const decisions = getSectionTextByKey(content, "spec.confirmedDecisions");
     if (!hasRealText(decisions)) {
       errors.push(labels.specExceptionNoDecisions);
@@ -149,7 +137,7 @@ function validateSpecContract(
   const pending = getSectionTextByKey(content, "spec.pendingDecisions", {
     stripPlaceholders: false,
   });
-  if (DECISION_TAGS.CRITICAL.test(pending) && status === "PRONTO") {
+  if (DECISION_TAGS.CRITICAL.test(pending) && status === "READY") {
     warnings.push(labels.specReadyWithCriticalPending);
   }
 }
@@ -171,7 +159,7 @@ function validatePlanContract(
     errors.push(labels.planNoAcceptanceCriteria);
   }
 
-  if (specStatus === "EXCEÇÃO APROVADA") {
+  if (specStatus === "EXCEPTION APPROVED") {
     const exception = getSectionTextByKey(content, "plan.exceptionMode");
     if (!hasRealText(exception)) {
       errors.push(labels.planNoExceptionMode);

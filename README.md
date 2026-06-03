@@ -1,9 +1,9 @@
 # AI Spec Protocol CLI
 
-[![npm version](https://img.shields.io/npm/v/spec-protocol-cli?logo=npm&color=brightgreen)](https://www.npmjs.com/package/spec-protocol-cli)
-[![license](https://img.shields.io/npm/l/spec-protocol-cli?color=blue)](https://github.com/spec-protocol/spec-protocol-cli/blob/main/LICENSE)
-[![node version](https://img.shields.io/node/v/spec-protocol-cli?color=yellow)](https://nodejs.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/spec-protocol/spec-protocol-cli/pulls)
+[npm version](https://www.npmjs.com/package/spec-protocol-cli)
+[license](https://github.com/spec-protocol/spec-protocol-cli/blob/main/LICENSE)
+[node version](https://nodejs.org)
+[PRs Welcome](https://github.com/spec-protocol/spec-protocol-cli/pulls)
 
 CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistidas por IA**, com fluxo **RTA / AI-ATR** para refinamento técnico antes da implementação.
 
@@ -21,7 +21,7 @@ CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistid
 
 O par **RTA / AI-ATR (Refinamento Técnico Assistido por IA / AI-Assisted Technical Refinement)** é o fluxo operacional guiado pelo **Protocolo de Especificações Assistidas por IA**. Ele ajuda times de software a reduzir incerteza antes da implementação, usando skills de IA e artefatos versionáveis no próprio repositório.
 
-Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `tasks.md`, instalando também as skills RTA em `.agents/skills/`.
+Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `tasks.md`, instalando também as skills Spec Protocol em `.agents/skills/`.
 
 ### Recursos principais
 
@@ -33,40 +33,42 @@ Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `ta
 
 ### Skills instaladas
 
-| Skill | Função |
-| :--- | :--- |
-| `@rta-triagem` | Classifica tipo, risco e fluxo recomendado |
-| `@rta-analise` | Cruza card e codebase para atualizar `spec.md` |
-| `@rta-dor` | Decide prontidão proporcional ao risco |
-| `@rta-po` | Gera coespecificação com decisões A/B para o PO |
-| `@rta-revalidacao` | Revalida respostas do PO e fecha lacunas |
-| `@rta-plan` | Gera/refina `plan.md` e `tasks.md` |
-| `@rta-excecao` | Registra bypass formal com risco aceito |
+
+| Skill                       | Função                                          |
+| --------------------------- | ----------------------------------------------- |
+| `@spec-protocol-triage`     | Classifica tipo, risco e fluxo recomendado      |
+| `@spec-protocol-analyze`    | Cruza card e codebase para atualizar `spec.md`  |
+| `@spec-protocol-dor`        | Decide prontidão proporcional ao risco          |
+| `@spec-protocol-po`         | Gera coespecificação com decisões A/B para o PO |
+| `@spec-protocol-revalidate` | Revalida respostas do PO e fecha lacunas        |
+| `@spec-protocol-plan`       | Gera/refina `plan.md` e `tasks.md`              |
+| `@spec-protocol-exception`  | Registra bypass formal com risco aceito         |
+
 
 ### Convenções RTA
 
-`@rta-triagem` é a entrada principal. Ela classifica tipo de trabalho e risco; demandas de baixo risco só pulam para `@rta-plan` quando têm objetivo claro, escopo delimitado, critério testável e nenhuma decisão `[CRÍTICO]` pendente.
+`@spec-protocol-triage` é a entrada principal. Ela classifica tipo de trabalho e risco; demandas de baixo risco só pulam para `@spec-protocol-plan` quando têm objetivo claro, escopo delimitado, critério testável e nenhuma decisão `[CRITICAL]` pendente.
 
-Use uma taxonomia única em todos os artefatos:
+Use uma taxonomia única em todos os artefatos (inglês canônico; aliases PT aceitos pelo `validate` na 0.3.0):
 
-- `[CRÍTICO]`: bloqueia início ou pode mudar escopo/solução.
-- `[RISCO]`: pode gerar efeito colateral relevante.
-- `[HIPÓTESE]`: inferência sem evidência direta.
-- `[OBSERVAÇÃO]`: útil, mas não bloqueia.
+- `[CRITICAL]`: bloqueia início ou pode mudar escopo/solução.
+- `[RISK]`: pode gerar efeito colateral relevante.
+- `[HYPOTHESIS]`: inferência sem evidência direta.
+- `[OBSERVATION]`: útil, mas não bloqueia.
 
-`EXCEÇÃO APROVADA` só é válida quando `@rta-excecao` registra motivo, riscos aceitos, responsável pela decisão e revisão pós-entrega.
+`EXCEPTION APPROVED` só é válida quando `@spec-protocol-exception` registra motivo, riscos aceitos, responsável pela decisão e revisão pós-entrega.
 
 ### Fluxo de trabalho
 
 ```text
 1. spec-protocol init
-   Cria .spec-protocol/ e instala .agents/skills/rta-*
+   Cria .spec-protocol/ e instala .agents/skills/spec-protocol-*
 
 2. spec-protocol new JIRA-123
    Cria spec.md, plan.md e tasks.md para a demanda
 
-3. IDE + skills RTA
-   Use @rta-triagem como entrada e siga o fluxo por risco
+3. IDE + skills Spec Protocol
+   Use @spec-protocol-triage como entrada e siga o fluxo por risco
 
 4. spec-protocol export
    Gera spec-kit-input.md a partir dos artefatos
@@ -95,18 +97,20 @@ yarn global add spec-protocol-cli
 
 O executável da CLI responde pelo comando `spec-protocol`.
 
-| Comando | Descrição |
-| :--- | :--- |
-| `spec-protocol init [--no-gitignore]` | Inicializa `.spec-protocol/`, instala skills RTA e pergunta idioma (`pt-BR`, `en`, `es`) |
-| `spec-protocol new <task-id>` | Cria `spec.md`, `plan.md` e `tasks.md` |
-| `spec-protocol list` | Lista tarefas e progresso dos artefatos |
-| `spec-protocol status <task-id>` | Exibe painel de preenchimento dos artefatos |
-| `spec-protocol context <task-id>` | Mostra roteiro RTA e skills sugeridas para a IDE |
-| `spec-protocol open <task-id> [--artifact spec\|plan\|tasks]` | Abre artefato no editor |
-| `spec-protocol validate <task-id>` | Valida artefatos críticos para CI |
-| `spec-protocol export <task-id>` | Gera `spec-kit-input.md` |
-| `spec-protocol run-spec <task-id>` | Executa Spec-Kit com o export |
-| `spec-protocol doctor` | Executa health check do protocolo, skills e templates |
+
+| Comando                                                     | Descrição                                                   |
+| ----------------------------------------------------------- | ----------------------------------------------------------- |
+| `spec-protocol init [--no-gitignore]`                       | Inicializa `.spec-protocol/` e instala skills Spec Protocol |
+| `spec-protocol new <task-id>`                               | Cria `spec.md`, `plan.md` e `tasks.md`                      |
+| `spec-protocol list`                                        | Lista tarefas e progresso dos artefatos                     |
+| `spec-protocol status <task-id>`                            | Exibe painel de preenchimento dos artefatos                 |
+| `spec-protocol context <task-id>`                           | Mostra roteiro RTA e skills sugeridas para a IDE            |
+| `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Abre artefato no editor                                     |
+| `spec-protocol validate <task-id>`                          | Valida artefatos críticos para CI                           |
+| `spec-protocol export <task-id>`                            | Gera `spec-kit-input.md`                                    |
+| `spec-protocol run-spec <task-id>`                          | Executa Spec-Kit com o export                               |
+| `spec-protocol doctor`                                      | Executa health check do protocolo, skills e templates       |
+
 
 ### Configuração
 
@@ -116,7 +120,6 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 {
   "squad": "Nome da Squad",
   "ide": "Cursor",
-  "language": "pt-BR",
   "specKit": {
     "command": "specify",
     "args": []
@@ -126,23 +129,23 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 ```
 
 - `squad`: nome da squad que assina as especificações geradas.
-- `ide`: editor preferencial de desenvolvimento (`Cursor`, `VS Code`, `JetBrains`, `Outro`).
-- `language`: idioma do projeto (`pt-BR`, `en`, `es`). Escolhido no `init`. Projetos antigos sem esse campo usam fallback `pt-BR`.
+- `ide`: editor preferencial de desenvolvimento (`Cursor`, `VS Code`, `JetBrains`, `Other`).
 - `specKit`: executável e argumentos para rodar o Spec-Kit.
 
-### Idiomas (i18n)
+### Taxonomia e locale
 
-- No `init`, escolha entre **Português (Brasil)**, **English** ou **Español**.
-- A escolha afeta templates gerados por `new`, roteiros do `context`, labels do `export`, `status`, `validate`, `list`, labels de artefatos e instrução de idioma nas skills instaladas.
-- Nomes técnicos permanecem iguais: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
-- Tags RTA (`[CRÍTICO]`, `[RISCO]`, etc.) permanecem em português em todos os idiomas.
-- Rode `spec-protocol init` novamente para sincronizar o bloco de idioma nas skills já instaladas.
+- CLI, templates e `validate` usam taxonomia **em inglês** (`[CRITICAL]`, `READY`, headings EN).
+- Idioma do chat com o usuário é decisão do agente na IDE; a CLI não persiste locale.
+- Nomes técnicos: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
 
-### Upgrade (1.0.1+)
+### Upgrade (0.3.0+)
 
-- Reinstale o pacote para obter templates em `templates/{pt-BR,en,es}/`: `npm install -g spec-protocol-cli@latest`
-- Valide com `spec-protocol doctor` (checa templates i18n e `config.language`)
-- **Não suportado:** tarefas no formato antigo com subpastas `artifacts/` e `answers/`. Recrie com `spec-protocol new <ID>` e preencha `spec.md`, `plan.md` e `tasks.md` na raiz da pasta da tarefa.
+- Reinstale: `npm install -g spec-protocol-cli@0.3.0`
+- Rode `spec-protocol init` para instalar skills `spec-protocol-*` (substituem `rta-*` legadas).
+- Recrie tarefas com headings/tags antigos se o `validate` falhar; aliases PT ainda aceitos na 0.3.0.
+- Campo `config.language` legado é ignorado.
+- Valide com `spec-protocol doctor`.
+- **Não suportado:** tarefas com subpastas `artifacts/` e `answers/`. Recrie com `spec-protocol new <ID>`.
 
 ### Desenvolvimento local
 
@@ -158,7 +161,7 @@ Após o `npm link`, o binário local fica disponível como `spec-protocol`.
 
 ### Segurança
 
-- **Whitelist de arquivos**: o pacote npm publica `dist/`, `templates/`, skills RTA em `.agents/skills/rta-*/`, `README.md` e `LICENSE`.
+- **Whitelist de arquivos**: o pacote npm publica `dist/`, `templates/`, skills Spec Protocol em `.agents/skills/spec-protocol-*/`, `README.md` e `LICENSE`.
 - **Prevenção de execução de shell**: chamadas a processos filhos usam vetores de argumentos e `shell: false`.
 - **Auditoria**: dependências devem ser verificadas com `npm audit` antes da publicação.
 
@@ -174,7 +177,7 @@ Este projeto é licenciado sob os termos da [Licença MIT](LICENSE).
 
 The **RTA / AI-ATR (Refinamento Técnico Assistido por IA / AI-Assisted Technical Refinement)** pair is the operational workflow guided by the **AI Spec Protocol**. It helps software teams reduce uncertainty before implementation by using AI skills and versioned artifacts inside the repository.
 
-The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`, and installs the RTA skills under `.agents/skills/`.
+The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`, and installs the Spec Protocol skills under `.agents/skills/`.
 
 ### Key features
 
@@ -186,40 +189,42 @@ The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`,
 
 ### Installed skills
 
-| Skill | Purpose |
-| :--- | :--- |
-| `@rta-triagem` | Classifies work type, risk, and recommended flow |
-| `@rta-analise` | Cross-checks card and codebase to update `spec.md` |
-| `@rta-dor` | Decides readiness proportionally to risk |
-| `@rta-po` | Generates co-specification with A/B decisions for the PO |
-| `@rta-revalidacao` | Revalidates PO responses and closes gaps |
-| `@rta-plan` | Generates/refines `plan.md` and `tasks.md` |
-| `@rta-excecao` | Records formal bypass with accepted risk |
+
+| Skill                       | Purpose                                                  |
+| --------------------------- | -------------------------------------------------------- |
+| `@spec-protocol-triage`     | Classifies work type, risk, and recommended flow         |
+| `@spec-protocol-analyze`    | Cross-checks card and codebase to update `spec.md`       |
+| `@spec-protocol-dor`        | Decides readiness proportionally to risk                 |
+| `@spec-protocol-po`         | Generates co-specification with A/B decisions for the PO |
+| `@spec-protocol-revalidate` | Revalidates PO responses and closes gaps                 |
+| `@spec-protocol-plan`       | Generates/refines `plan.md` and `tasks.md`               |
+| `@spec-protocol-exception`  | Records formal bypass with accepted risk                 |
+
 
 ### RTA conventions
 
-`@rta-triagem` is the main entry point. It classifies work type and risk; low-risk tasks only skip to `@rta-plan` when they have a clear objective, bounded scope, at least one testable criterion, and no pending `[CRÍTICO]` decision.
+`@spec-protocol-triage` is the main entry point. It classifies work type and risk; low-risk tasks only skip to `@spec-protocol-plan` when they have a clear objective, bounded scope, at least one testable criterion, and no pending `[CRITICAL]` decision.
 
-Use a single taxonomy across all artifacts:
+Use a single taxonomy across all artifacts (English canonical; PT aliases accepted by `validate` in 0.3.0):
 
-- `[CRÍTICO]`: blocks start or may change scope/solution.
-- `[RISCO]`: may cause relevant side effects.
-- `[HIPÓTESE]`: inference without direct evidence.
-- `[OBSERVAÇÃO]`: useful, but does not block.
+- `[CRITICAL]`: blocks start or may change scope/solution.
+- `[RISK]`: may cause relevant side effects.
+- `[HYPOTHESIS]`: inference without direct evidence.
+- `[OBSERVATION]`: useful, but does not block.
 
-`EXCEÇÃO APROVADA` is valid only when `@rta-excecao` records reason, accepted risks, decision owner, and post-delivery review.
+`EXCEPTION APPROVED` is valid only when `@spec-protocol-exception` records reason, accepted risks, decision owner, and post-delivery review.
 
 ### Workflow
 
 ```text
 1. spec-protocol init
-   Creates .spec-protocol/ and installs .agents/skills/rta-*
+   Creates .spec-protocol/ and installs .agents/skills/spec-protocol-*
 
 2. spec-protocol new JIRA-123
    Creates spec.md, plan.md, and tasks.md for the task
 
-3. IDE + RTA skills
-   Start with @rta-triagem and follow the risk-based flow
+3. IDE + Spec Protocol skills
+   Start with @spec-protocol-triage and follow the risk-based flow
 
 4. spec-protocol export
    Generates spec-kit-input.md from the artifacts
@@ -248,18 +253,20 @@ yarn global add spec-protocol-cli
 
 The CLI executable is `spec-protocol`.
 
-| Command | Description |
-| :--- | :--- |
-| `spec-protocol init [--no-gitignore]` | Initializes `.spec-protocol/`, installs RTA skills, and prompts for language (`pt-BR`, `en`, `es`) |
-| `spec-protocol new <task-id>` | Creates `spec.md`, `plan.md`, and `tasks.md` |
-| `spec-protocol list` | Lists tasks and artifact progress |
-| `spec-protocol status <task-id>` | Shows artifact completion status |
-| `spec-protocol context <task-id>` | Shows RTA guidance and suggested IDE skills |
-| `spec-protocol open <task-id> [--artifact spec\|plan\|tasks]` | Opens an artifact in the editor |
-| `spec-protocol validate <task-id>` | Validates critical artifacts for CI |
-| `spec-protocol export <task-id>` | Generates `spec-kit-input.md` |
-| `spec-protocol run-spec <task-id>` | Runs Spec-Kit with the generated export |
-| `spec-protocol doctor` | Runs a health check for protocol, skills, and templates |
+
+| Command                                                     | Description                                                     |
+| ----------------------------------------------------------- | --------------------------------------------------------------- |
+| `spec-protocol init [--no-gitignore]`                       | Initializes `.spec-protocol/` and installs Spec Protocol skills |
+| `spec-protocol new <task-id>`                               | Creates `spec.md`, `plan.md`, and `tasks.md`                    |
+| `spec-protocol list`                                        | Lists tasks and artifact progress                               |
+| `spec-protocol status <task-id>`                            | Shows artifact completion status                                |
+| `spec-protocol context <task-id>`                           | Shows RTA guidance and suggested IDE skills                     |
+| `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Opens an artifact in the editor                                 |
+| `spec-protocol validate <task-id>`                          | Validates critical artifacts for CI                             |
+| `spec-protocol export <task-id>`                            | Generates `spec-kit-input.md`                                   |
+| `spec-protocol run-spec <task-id>`                          | Runs Spec-Kit with the generated export                         |
+| `spec-protocol doctor`                                      | Runs a health check for protocol, skills, and templates         |
+
 
 ### Configuration
 
@@ -269,7 +276,6 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 {
   "squad": "Team Name",
   "ide": "Cursor",
-  "language": "en",
   "specKit": {
     "command": "specify",
     "args": []
@@ -280,22 +286,22 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 
 - `squad`: team responsible for the generated specifications.
 - `ide`: preferred development editor (`Cursor`, `VS Code`, `JetBrains`, `Other`).
-- `language`: project language (`pt-BR`, `en`, `es`). Selected during `init`. Legacy configs without this field fall back to `pt-BR`.
 - `specKit`: executable and arguments used to run Spec-Kit.
 
-### Languages (i18n)
+### Taxonomy and locale
 
-- During `init`, choose **Português (Brasil)**, **English**, or **Español**.
-- The choice affects templates from `new`, `context` guides, `export` labels, `status`, `validate`, `list`, artifact labels, and language instructions in installed skills.
-- Technical names stay unchanged: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
-- RTA taxonomy tags (`[CRÍTICO]`, `[RISCO]`, etc.) stay in Portuguese in all languages.
-- Run `spec-protocol init` again to sync the language block on already installed skills.
+- CLI, templates, and `validate` use **English** taxonomy (`[CRITICAL]`, `READY`, EN headings).
+- Chat language with the user is the agent's choice in the IDE; the CLI does not persist locale.
+- Technical names: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
 
-### Upgrade (1.0.1+)
+### Upgrade (0.3.0+)
 
-- Reinstall the package for `templates/{pt-BR,en,es}/`: `npm install -g spec-protocol-cli@latest`
-- Validate with `spec-protocol doctor` (i18n templates and `config.language`)
-- **Not supported:** legacy tasks with `artifacts/` and `answers/` subfolders. Recreate with `spec-protocol new <ID>` and fill `spec.md`, `plan.md`, and `tasks.md` at the task folder root.
+- Reinstall: `npm install -g spec-protocol-cli@0.3.0`
+- Run `spec-protocol init` to install `spec-protocol-*` skills (replace legacy `rta-*`).
+- Recreate tasks with old headings/tags if `validate` fails; PT aliases still accepted in 0.3.0.
+- Legacy `config.language` field is ignored.
+- Validate with `spec-protocol doctor`.
+- **Not supported:** tasks with `artifacts/` and `answers/` subfolders. Recreate with `spec-protocol new <ID>`.
 
 ### Local development
 
@@ -311,7 +317,7 @@ After `npm link`, the local binary is available as `spec-protocol`.
 
 ### Security
 
-- **File whitelist**: the npm package publishes `dist/`, `templates/`, RTA skills under `.agents/skills/rta-*/`, `README.md`, and `LICENSE`.
+- **File whitelist**: the npm package publishes `dist/`, `templates/`, Spec Protocol skills under `.agents/skills/spec-protocol-*/`, `README.md`, and `LICENSE`.
 - **Shell execution prevention**: child process calls use argument arrays and `shell: false`.
 - **Audit**: dependencies should be checked with `npm audit` before publication.
 
@@ -327,7 +333,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 El par **RTA / AI-ATR (Refinamiento Técnico Asistido por IA / AI-Assisted Technical Refinement)** es el flujo operativo guiado por el **Protocolo de Especificaciones Asistidas por IA**. Ayuda a equipos de software a reducir incertidumbre antes de la implementación mediante skills de IA y artefactos versionables dentro del repositorio.
 
-La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, y instala las skills RTA en `.agents/skills/`.
+La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, y instala las skills Spec Protocol en `.agents/skills/`.
 
 ### Funcionalidades principales
 
@@ -339,40 +345,42 @@ La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, 
 
 ### Skills instaladas
 
-| Skill | Función |
-| :--- | :--- |
-| `@rta-triagem` | Clasifica tipo de trabajo, riesgo y flujo recomendado |
-| `@rta-analise` | Cruza card y codebase para actualizar `spec.md` |
-| `@rta-dor` | Decide preparación proporcional al riesgo |
-| `@rta-po` | Genera coespecificación con decisiones A/B para el PO |
-| `@rta-revalidacao` | Revalida respuestas del PO y cierra brechas |
-| `@rta-plan` | Genera/refina `plan.md` y `tasks.md` |
-| `@rta-excecao` | Registra bypass formal con riesgo aceptado |
+
+| Skill                       | Función                                               |
+| --------------------------- | ----------------------------------------------------- |
+| `@spec-protocol-triage`     | Clasifica tipo de trabajo, riesgo y flujo recomendado |
+| `@spec-protocol-analyze`    | Cruza card y codebase para actualizar `spec.md`       |
+| `@spec-protocol-dor`        | Decide preparación proporcional al riesgo             |
+| `@spec-protocol-po`         | Genera coespecificación con decisiones A/B para el PO |
+| `@spec-protocol-revalidate` | Revalida respuestas del PO y cierra brechas           |
+| `@spec-protocol-plan`       | Genera/refina `plan.md` y `tasks.md`                  |
+| `@spec-protocol-exception`  | Registra bypass formal con riesgo aceptado            |
+
 
 ### Convenciones RTA
 
-`@rta-triagem` es el punto de entrada principal. Clasifica tipo de trabajo y riesgo; las demandas de bajo riesgo solo saltan a `@rta-plan` cuando tienen objetivo claro, alcance delimitado, criterio testeable y ninguna decisión `[CRÍTICO]` pendiente.
+`@spec-protocol-triage` es el punto de entrada principal. Clasifica tipo de trabajo y riesgo; las demandas de bajo riesgo solo saltan a `@spec-protocol-plan` cuando tienen objetivo claro, alcance delimitado, criterio testeable y ninguna decisión `[CRITICAL]` pendiente.
 
-Use una taxonomía única en todos los artefactos:
+Use una taxonomía única en todos los artefactos (inglés canónico; aliases PT aceptados por `validate` en 0.3.0):
 
-- `[CRÍTICO]`: bloquea inicio o puede cambiar alcance/solución.
-- `[RISCO]`: puede generar efecto colateral relevante.
-- `[HIPÓTESE]`: inferencia sin evidencia directa.
-- `[OBSERVAÇÃO]`: útil, pero no bloquea.
+- `[CRITICAL]`: bloquea inicio o puede cambiar alcance/solución.
+- `[RISK]`: puede generar efecto colateral relevante.
+- `[HYPOTHESIS]`: inferencia sin evidencia directa.
+- `[OBSERVATION]`: útil, pero no bloquea.
 
-`EXCEÇÃO APROVADA` solo es válida cuando `@rta-excecao` registra motivo, riesgos aceptados, responsable de la decisión y revisión post-entrega.
+`EXCEPTION APPROVED` solo es válida cuando `@spec-protocol-exception` registra motivo, riesgos aceptados, responsable de la decisión y revisión post-entrega.
 
 ### Flujo de trabajo
 
 ```text
 1. spec-protocol init
-   Crea .spec-protocol/ y instala .agents/skills/rta-*
+   Crea .spec-protocol/ y instala .agents/skills/spec-protocol-*
 
 2. spec-protocol new JIRA-123
    Crea spec.md, plan.md y tasks.md para la demanda
 
-3. IDE + skills RTA
-   Use @rta-triagem como entrada y siga el flujo por riesgo
+3. IDE + skills Spec Protocol
+   Use @spec-protocol-triage como entrada y siga el flujo por riesgo
 
 4. spec-protocol export
    Genera spec-kit-input.md a partir de los artefactos
@@ -401,18 +409,20 @@ yarn global add spec-protocol-cli
 
 El ejecutable de la CLI es `spec-protocol`.
 
-| Comando | Descripción |
-| :--- | :--- |
-| `spec-protocol init [--no-gitignore]` | Inicializa `.spec-protocol/`, instala skills RTA y pregunta idioma (`pt-BR`, `en`, `es`) |
-| `spec-protocol new <task-id>` | Crea `spec.md`, `plan.md` y `tasks.md` |
-| `spec-protocol list` | Lista demandas y progreso de artefactos |
-| `spec-protocol status <task-id>` | Muestra estado de completitud de los artefactos |
-| `spec-protocol context <task-id>` | Muestra guía RTA y skills sugeridas para la IDE |
-| `spec-protocol open <task-id> [--artifact spec\|plan\|tasks]` | Abre un artefacto en el editor |
-| `spec-protocol validate <task-id>` | Valida artefactos críticos para CI |
-| `spec-protocol export <task-id>` | Genera `spec-kit-input.md` |
-| `spec-protocol run-spec <task-id>` | Ejecuta Spec-Kit con el export generado |
-| `spec-protocol doctor` | Ejecuta health check de protocolo, skills y templates |
+
+| Comando                                                     | Descripción                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------------- |
+| `spec-protocol init [--no-gitignore]`                       | Inicializa `.spec-protocol/` e instala skills Spec Protocol |
+| `spec-protocol new <task-id>`                               | Crea `spec.md`, `plan.md` y `tasks.md`                      |
+| `spec-protocol list`                                        | Lista demandas y progreso de artefactos                     |
+| `spec-protocol status <task-id>`                            | Muestra estado de completitud de los artefactos             |
+| `spec-protocol context <task-id>`                           | Muestra guía RTA y skills sugeridas para la IDE             |
+| `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Abre un artefacto en el editor                              |
+| `spec-protocol validate <task-id>`                          | Valida artefactos críticos para CI                          |
+| `spec-protocol export <task-id>`                            | Genera `spec-kit-input.md`                                  |
+| `spec-protocol run-spec <task-id>`                          | Ejecuta Spec-Kit con el export generado                     |
+| `spec-protocol doctor`                                      | Ejecuta health check de protocolo, skills y templates       |
+
 
 ### Configuración
 
@@ -422,7 +432,6 @@ Después de `init`, la CLI crea `.spec-protocol/config.json`:
 {
   "squad": "Nombre del equipo",
   "ide": "Cursor",
-  "language": "es",
   "specKit": {
     "command": "specify",
     "args": []
@@ -432,23 +441,23 @@ Después de `init`, la CLI crea `.spec-protocol/config.json`:
 ```
 
 - `squad`: equipo responsable por las especificaciones generadas.
-- `ide`: editor preferido (`Cursor`, `VS Code`, `JetBrains`, `Otro`).
-- `language`: idioma del proyecto (`pt-BR`, `en`, `es`). Elegido en `init`. Proyectos antiguos sin este campo usan fallback `pt-BR`.
+- `ide`: editor preferido (`Cursor`, `VS Code`, `JetBrains`, `Other`).
 - `specKit`: ejecutable y argumentos para ejecutar Spec-Kit.
 
-### Idiomas (i18n)
+### Taxonomía y locale
 
-- En `init`, elija **Português (Brasil)**, **English** o **Español**.
-- La elección afecta templates de `new`, guías de `context`, labels de `export`, `status`, `validate`, `list`, labels de artefactos e instrucciones de idioma en skills instaladas.
-- Los nombres técnicos permanecen iguales: `spec.md`, `plan.md`, `tasks.md`, `@rta-*`.
-- Las tags RTA (`[CRÍTICO]`, `[RISCO]`, etc.) permanecen en portugués en todos los idiomas.
-- Ejecute `spec-protocol init` de nuevo para sincronizar el bloque de idioma en skills ya instaladas.
+- CLI, templates y `validate` usan taxonomía **en inglés** (`[CRITICAL]`, `READY`, headings EN).
+- El idioma del chat con el usuario lo decide el agente en la IDE; la CLI no persiste locale.
+- Nombres técnicos: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
 
-### Actualización (1.0.1+)
+### Actualización (0.3.0+)
 
-- Reinstale el paquete para obtener `templates/{pt-BR,en,es}/`: `npm install -g spec-protocol-cli@latest`
-- Valide con `spec-protocol doctor` (templates i18n y `config.language`)
-- **No soportado:** tareas en formato antiguo con subcarpetas `artifacts/` y `answers/`. Recree con `spec-protocol new <ID>` y complete `spec.md`, `plan.md` y `tasks.md` en la raíz de la tarea.
+- Reinstale: `npm install -g spec-protocol-cli@0.3.0`
+- Ejecute `spec-protocol init` para instalar skills `spec-protocol-*` (reemplazan `rta-*` legadas).
+- Recree tareas con headings/tags antiguos si `validate` falla; aliases PT aún aceptados en 0.3.0.
+- Campo `config.language` legado se ignora.
+- Valide con `spec-protocol doctor`.
+- **No soportado:** tareas con subcarpetas `artifacts/` y `answers/`. Recree con `spec-protocol new <ID>`.
 
 ### Desarrollo local
 
@@ -464,7 +473,7 @@ Después de `npm link`, el binario local queda disponible como `spec-protocol`.
 
 ### Seguridad
 
-- **Whitelist de archivos**: el paquete npm publica `dist/`, `templates/`, skills RTA en `.agents/skills/rta-*/`, `README.md` y `LICENSE`.
+- **Whitelist de archivos**: el paquete npm publica `dist/`, `templates/`, skills Spec Protocol en `.agents/skills/spec-protocol-*/`, `README.md` y `LICENSE`.
 - **Prevención de ejecución de shell**: las llamadas a procesos hijos usan arrays de argumentos y `shell: false`.
 - **Auditoría**: las dependencias deben verificarse con `npm audit` antes de publicar.
 
@@ -472,13 +481,13 @@ Después de `npm link`, el binario local queda disponible como `spec-protocol`.
 
 Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
 
-
 ## 🛡️ Segurança
 
 A segurança e integridade do seu repositório de código são nossas maiores prioridades:
-*   **Whitelist de Arquivos**: O empacotamento para publicação no npm utiliza a regra estrita `files` do `package.json`. Apenas a pasta `dist/` (compilada), a pasta de `templates/`, o `README.md` e o `LICENSE` são enviados. Arquivos locais de configuração, arquivos `.env`, chaves privadas e o código-fonte original ficam 100% de fora do pacote final.
-*   **Prevenção de Execução de Shell**: Nenhuma chamada a processos filhos (como abertura de editores via `open` ou execução do Spec-Kit via `specify`) realiza avaliação arbitrária de string no shell (parâmetro `shell: false`). As chamadas são diretas usando vetores de argumentos (`spawn`/`execFile`), prevenindo riscos de command injection.
-*   **Nota de Auditoria**: Mantemos nossas dependências livres de vulnerabilidades críticas através de auditorias recorrentes do `npm audit`.
+
+- **Whitelist de Arquivos**: O empacotamento para publicação no npm utiliza a regra estrita `files` do `package.json`. Apenas a pasta `dist/` (compilada), a pasta de `templates/`, o `README.md` e o `LICENSE` são enviados. Arquivos locais de configuração, arquivos `.env`, chaves privadas e o código-fonte original ficam 100% de fora do pacote final.
+- **Prevenção de Execução de Shell**: Nenhuma chamada a processos filhos (como abertura de editores via `open` ou execução do Spec-Kit via `specify`) realiza avaliação arbitrária de string no shell (parâmetro `shell: false`). As chamadas são diretas usando vetores de argumentos (`spawn`/`execFile`), prevenindo riscos de command injection.
+- **Nota de Auditoria**: Mantemos nossas dependências livres de vulnerabilidades críticas através de auditorias recorrentes do `npm audit`.
 
 ---
 
@@ -488,3 +497,4 @@ Este projeto é licenciado sob os termos da **Licença MIT**.
 
 > **AVISO DE ISENÇÃO DE RESPONSABILIDADE**:
 > O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM QUALQUER TIPO DE GARANTIA, EXPRESSA OU IMPLÍCITA. EM NENHUMA CIRCUNSTÂNCIA OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO, DANOS OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA, DECORRENTE DE, OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO SOFTWARE.
+

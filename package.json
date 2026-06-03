@@ -1,6 +1,6 @@
 {
   "name": "spec-protocol-cli",
-  "version": "1.0.1",
+  "version": "0.3.0",
   "description": "CLI do AI Spec Protocol — RTA / AI-ATR (Refinamento Técnico Assistido por IA) com skills e artefatos spec/plan/tasks",
   "type": "module",
   "bin": {
@@ -9,13 +9,13 @@
   "files": [
     "dist",
     "templates",
-    ".agents/skills/rta-triagem/SKILL.md",
-    ".agents/skills/rta-analise/SKILL.md",
-    ".agents/skills/rta-dor/SKILL.md",
-    ".agents/skills/rta-po/SKILL.md",
-    ".agents/skills/rta-revalidacao/SKILL.md",
-    ".agents/skills/rta-plan/SKILL.md",
-    ".agents/skills/rta-excecao/SKILL.md",
+    ".agents/skills/spec-protocol-triage/SKILL.md",
+    ".agents/skills/spec-protocol-analyze/SKILL.md",
+    ".agents/skills/spec-protocol-dor/SKILL.md",
+    ".agents/skills/spec-protocol-po/SKILL.md",
+    ".agents/skills/spec-protocol-revalidate/SKILL.md",
+    ".agents/skills/spec-protocol-plan/SKILL.md",
+    ".agents/skills/spec-protocol-exception/SKILL.md",
     "README.md",
     "LICENSE"
   ],

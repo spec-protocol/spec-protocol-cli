@@ -1,29 +1,21 @@
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AGENTS_SKILLS_DIR, PROTOCOL_DIR } from "../constants.js";
-import {
-  DEFAULT_LANGUAGE,
-  type SupportedLanguage,
-} from "./i18n.js";
 
-/** Raiz do pacote npm (contém templates/ e dist/). */
+/** npm package root (contains templates/ and dist/). */
 export function getPackageRoot(): string {
   const dir = dirname(fileURLToPath(import.meta.url));
-  // Bundle tsup: dist/index.js → raiz é o pai de dist/
   if (dir.endsWith(`${sep}dist`) || dir.endsWith("/dist")) {
     return join(dir, "..");
   }
-  // Desenvolvimento: src/lib/*.ts
   return join(dir, "..", "..");
 }
 
-export function getTemplatesDir(
-  language: SupportedLanguage = DEFAULT_LANGUAGE,
-): string {
-  return join(getPackageRoot(), "templates", language);
+export function getTemplatesDir(): string {
+  return join(getPackageRoot(), "templates");
 }
 
-/** Pack de skills RTA embutido no pacote npm */
+/** Skill pack bundled in the npm package */
 export function getSkillPackDir(): string {
   return join(getPackageRoot(), ".agents", "skills");
 }

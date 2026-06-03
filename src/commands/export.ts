@@ -22,14 +22,14 @@ export async function runExport(
   const protocolRoot = getProtocolRoot(cwd);
   if (!(await pathExists(protocolRoot))) {
     throw new Error(
-      'Protocolo não inicializado. Execute primeiro: spec-protocol init',
+      "Protocol not initialized. Run first: spec-protocol init",
     );
   }
 
   const taskDir = getTaskDir(cwd, taskId);
   if (!(await pathExists(taskDir))) {
     throw new Error(
-      `Tarefa "${taskId}" não encontrada. Execute: spec-protocol new ${taskId}`,
+      `Task "${taskId}" not found. Run: spec-protocol new ${taskId}`,
     );
   }
 
@@ -40,7 +40,7 @@ export async function runExport(
   await ensureDir(dirname(exportPath));
   await writeTextFile(exportPath, content);
 
-  console.log(chalk.green(`✓ Export gerado:`));
+  console.log(chalk.green(`✓ Export generated:`));
   console.log(chalk.cyan(`  .spec-protocol/exports/${taskId}/spec-kit-input.md`));
   console.log("");
 }

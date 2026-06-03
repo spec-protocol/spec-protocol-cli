@@ -21,9 +21,9 @@ export function runSpecKit(
       if (err.code === "ENOENT") {
         reject(
           new Error(
-            `Comando "${command}" não encontrado no PATH.\n` +
-              `Instale o Spec-Kit Specify CLI: ${SPEC_KIT_INSTALL_URL}\n` +
-              `Ou ajuste specKit.command em .spec-protocol/config.json`,
+            `Command "${command}" not found in PATH.\n` +
+              `Install Spec-Kit Specify CLI: ${SPEC_KIT_INSTALL_URL}\n` +
+              `Or adjust specKit.command in .spec-protocol/config.json`,
           ),
         );
         return;

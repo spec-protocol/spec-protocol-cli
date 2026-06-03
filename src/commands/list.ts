@@ -1,10 +1,5 @@
 import chalk from "chalk";
-import { readConfig } from "../lib/config.js";
-import {
-  DEFAULT_LANGUAGE,
-  getDateLocale,
-  getListLabels,
-} from "../lib/i18n.js";
+import { getListLabels, getDateLocale } from "../lib/i18n.js";
 import {
   assertProtocolInitialized,
   getTaskIds,
@@ -14,10 +9,8 @@ import {
 export async function runList(cwd: string = process.cwd()): Promise<void> {
   await assertProtocolInitialized(cwd);
 
-  const config = await readConfig(cwd);
-  const language = config?.language ?? DEFAULT_LANGUAGE;
-  const labels = getListLabels(language);
-  const dateLocale = getDateLocale(language);
+  const labels = getListLabels();
+  const dateLocale = getDateLocale();
   const ids = await getTaskIds(cwd);
 
   if (ids.length === 0) {

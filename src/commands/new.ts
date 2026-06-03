@@ -1,24 +1,18 @@
 import chalk from "chalk";
 import { join } from "node:path";
 import { ARTIFACTS } from "../constants.js";
-import { readConfig } from "../lib/config.js";
 import { pathExists, ensureDir, readTextFile, writeTextFile } from "../lib/fs.js";
-import {
-  DEFAULT_LANGUAGE,
-  getArtifactLabel,
-  type SupportedLanguage,
-} from "../lib/i18n.js";
+import { getArtifactLabel } from "../lib/i18n.js";
 import { getProtocolRoot, getTaskDir, getTemplatesDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
 async function loadArtifactTemplate(
   filename: string,
   taskId: string,
-  language: SupportedLanguage,
 ): Promise<string> {
-  const templatePath = join(getTemplatesDir(language), filename);
+  const templatePath = join(getTemplatesDir(), filename);
   if (!(await pathExists(templatePath))) {
-    throw new Error(`Template não encontrado: ${templatePath}`);
+    throw new Error(`Template not found: ${templatePath}`);
   }
   const raw = await readTextFile(templatePath);
   return raw.replace(/\[TASK-ID\]/g, taskId);
@@ -36,40 +30,41 @@ export async function runNew(
   const protocolRoot = getProtocolRoot(cwd);
   if (!(await pathExists(protocolRoot))) {
     throw new Error(
-      'Protocolo não inicializado. Execute primeiro: spec-protocol init',
+      "Protocol not initialized. Run first: spec-protocol init",
     );
   }
 
-  const config = await readConfig(cwd);
-  const language = config?.language ?? DEFAULT_LANGUAGE;
-
   const taskDir = getTaskDir(cwd, taskId);
   if (await pathExists(taskDir)) {
-    throw new Error(`Tarefa "${taskId}" já existe em .spec-protocol/tasks/${taskId}`);
+    throw new Error(
+      `Task "${taskId}" already exists in .spec-protocol/tasks/${taskId}`,
+    );
   }
 
-  const templatesDir = getTemplatesDir(language);
+  const templatesDir = getTemplatesDir();
   if (!(await pathExists(templatesDir))) {
-    throw new Error(`Templates não encontrados em: ${templatesDir}`);
+    throw new Error(`Templates not found at: ${templatesDir}`);
   }
 
   await ensureDir(taskDir);
 
   for (const artifact of ARTIFACTS) {
-    const content = await loadArtifactTemplate(artifact.file, taskId, language);
+    const content = await loadArtifactTemplate(artifact.file, taskId);
     await writeTextFile(join(taskDir, artifact.file), content);
   }
 
-  console.log(chalk.green(`✓ Tarefa criada: .spec-protocol/tasks/${taskId}/`));
+  console.log(chalk.green(`✓ Task created: .spec-protocol/tasks/${taskId}/`));
   for (const artifact of ARTIFACTS) {
     console.log(
       chalk.gray(
-        `  ${artifact.file} — ${getArtifactLabel(artifact.id, language)}`,
+        `  ${artifact.file} — ${getArtifactLabel(artifact.id)}`,
       ),
     );
   }
   console.log("");
-  console.log(chalk.gray("  Na IDE: @rta-triagem com o card do Jira"));
-  console.log(chalk.gray("  Atualize spec.md / plan.md / tasks.md conforme as skills orientarem"));
+  console.log(chalk.gray("  In IDE: @spec-protocol-triage with the ticket/card"));
+  console.log(
+    chalk.gray("  Update spec.md / plan.md / tasks.md as skills guide you"),
+  );
   console.log("");
 }

@@ -2,22 +2,12 @@ import chalk from "chalk";
 import { input, select } from "@inquirer/prompts";
 import { printBanner } from "../banner.js";
 import { IDE_OPTIONS, LEGACY_PROTOCOL_DIR } from "../constants.js";
-import {
-  defaultConfig,
-  ensureConfigLanguage,
-  readConfig,
-  writeConfig,
-} from "../lib/config.js";
+import { defaultConfig, readConfig, writeConfig } from "../lib/config.js";
 import { join } from "node:path";
 import { ensureDir, pathExists } from "../lib/fs.js";
 import { getProtocolRoot } from "../lib/paths.js";
 import { updateGitignore } from "../lib/gitignore.js";
-import { installRtaSkills } from "../lib/skill-install.js";
-import {
-  DEFAULT_LANGUAGE,
-  LANGUAGE_PROMPT_OPTIONS,
-  type SupportedLanguage,
-} from "../lib/i18n.js";
+import { installSpecProtocolSkills } from "../lib/skill-install.js";
 
 export interface InitOptions {
   noGitignore?: boolean;
@@ -37,9 +27,9 @@ export async function runInit(
   if (legacyExists && !newExists) {
     console.log(
       chalk.yellow(
-        "⚠ Detectada pasta legada ./spec-protocol/ (sem ponto).\n" +
-          "  Migre com: mv spec-protocol .spec-protocol\n" +
-          "  Ou apague se foi apenas um teste.",
+        "⚠ Legacy folder ./spec-protocol/ detected (no leading dot).\n" +
+          "  Migrate with: mv spec-protocol .spec-protocol\n" +
+          "  Or delete if it was only a test.",
       ),
     );
     console.log("");
@@ -51,105 +41,73 @@ export async function runInit(
   if (exists && config) {
     console.log(
       chalk.yellow(
-        `⚠ ${protocolRoot} já existe. config.json não será sobrescrito.`,
+        `⚠ ${protocolRoot} already exists. config.json will not be overwritten.`,
       ),
     );
   } else {
     const squad = await input({
-      message: "Nome da squad/time:",
+      message: "Squad / team name:",
       default: "Squad",
-      validate: (v) => (v.trim() ? true : "Informe o nome da squad."),
+      validate: (v) => (v.trim() ? true : "Enter a squad name."),
     });
 
     const ide = await select({
-      message: "IDE principal:",
+      message: "Primary IDE:",
       choices: IDE_OPTIONS.map((name) => ({ name, value: name })),
     });
 
-    const language = await select({
-      message: "Idioma / Language / Idioma:",
-      choices: LANGUAGE_PROMPT_OPTIONS.map((option) => ({
-        name: option.name,
-        value: option.value,
-      })),
-      default: DEFAULT_LANGUAGE,
-    });
-
-    config = defaultConfig(squad.trim(), ide, language as SupportedLanguage);
+    config = defaultConfig(squad.trim(), ide);
     await ensureDir(protocolRoot);
     await writeConfig(config, cwd);
 
     console.log("");
     console.log(
-      chalk.green(`✓ Squad configurada: ${chalk.bold(config.squad)}`),
+      chalk.green(`✓ Squad configured: ${chalk.bold(config.squad)}`),
     );
     console.log(chalk.green(`✓ IDE: ${config.ide}`));
-    console.log(chalk.green(`✓ Idioma: ${config.language}`));
   }
 
   await ensureDir(`${protocolRoot}/tasks`);
   await ensureDir(`${protocolRoot}/exports`);
 
-  const backfill = await ensureConfigLanguage(cwd);
-  if (backfill?.changed) {
-    config = await readConfig(cwd);
-    console.log(
-      chalk.yellow(
-        `⚠ config.json: language normalizado para ${chalk.bold(backfill.language)}` +
-          (backfill.previous !== undefined
-            ? ` (era: ${JSON.stringify(backfill.previous)})`
-            : " (campo ausente)"),
-      ),
-    );
-    console.log("");
-  }
-
-  const language = config?.language ?? DEFAULT_LANGUAGE;
-  const skillResult = await installRtaSkills(cwd, language);
+  const skillResult = await installSpecProtocolSkills(cwd);
   if (skillResult.installed.length > 0) {
     console.log(
       chalk.green(
-        `✓ Skills RTA instaladas: ${skillResult.installed.join(", ")}`,
-      ),
-    );
-  }
-  if (skillResult.updated.length > 0) {
-    console.log(
-      chalk.green(
-        `✓ Skills RTA atualizadas (idioma): ${skillResult.updated.join(", ")}`,
+        `✓ Spec Protocol skills installed: ${skillResult.installed.join(", ")}`,
       ),
     );
   }
   if (skillResult.skipped.length > 0) {
     console.log(
       chalk.gray(
-        `  Skills já presentes (sem alteração): ${skillResult.skipped.join(", ")}`,
+        `  Skills already present: ${skillResult.skipped.join(", ")}`,
       ),
     );
   }
   if (skillResult.missing.length > 0) {
     console.log(
       chalk.yellow(
-        `⚠ Skills ausentes no pacote: ${skillResult.missing.join(", ")}`,
+        `⚠ Skills missing from package: ${skillResult.missing.join(", ")}`,
       ),
     );
   }
 
   const gitignoreResult = await updateGitignore(cwd, options.noGitignore);
   if (gitignoreResult === "created") {
-    console.log(chalk.green("✓ .gitignore criado com snippet do protocolo"));
+    console.log(chalk.green("✓ .gitignore created with protocol snippet"));
   } else if (gitignoreResult === "appended") {
-    console.log(chalk.green("✓ .gitignore atualizado com snippet do protocolo"));
+    console.log(chalk.green("✓ .gitignore updated with protocol snippet"));
   } else if (gitignoreResult === "already-configured") {
-    console.log(chalk.gray("  .gitignore já configurado"));
+    console.log(chalk.gray("  .gitignore already configured"));
   } else if (gitignoreResult === "skipped") {
-    console.log(chalk.gray("  .gitignore ignorado (--no-gitignore)"));
+    console.log(chalk.gray("  .gitignore skipped (--no-gitignore)"));
   }
 
   console.log("");
-  console.log(chalk.green(`✓ RTA inicializado em ./.spec-protocol/`));
-  console.log(chalk.green(`✓ Skills em ./.agents/skills/rta-*`));
-  console.log(chalk.gray("  Próximo passo: spec-protocol new <ID-DA-TAREFA>"));
-  console.log(chalk.gray("  Na IDE: use @rta-triagem como ponto de entrada"));
+  console.log(chalk.green(`✓ Spec Protocol initialized in ./.spec-protocol/`));
+  console.log(chalk.green(`✓ Skills in ./.agents/skills/spec-protocol-*`));
+  console.log(chalk.gray("  Next step: spec-protocol new <TASK-ID>"));
+  console.log(chalk.gray("  In IDE: use @spec-protocol-triage as entry point"));
   console.log("");
 }

@@ -21,28 +21,28 @@ export async function runRunSpec(
   const protocolRoot = getProtocolRoot(cwd);
   if (!(await pathExists(protocolRoot))) {
     throw new Error(
-      'Protocolo não inicializado. Execute primeiro: spec-protocol init',
+      "Protocol not initialized. Run first: spec-protocol init",
     );
   }
 
   const exportPath = getExportPath(cwd, taskId);
   if (!(await pathExists(exportPath))) {
     throw new Error(
-      `Export não encontrado para "${taskId}". Execute: spec-protocol export ${taskId}`,
+      `Export not found for "${taskId}". Run: spec-protocol export ${taskId}`,
     );
   }
 
   const config = await readConfig(cwd);
   if (!config) {
     throw new Error(
-      "config.json não encontrado. Execute spec-protocol init.",
+      "config.json not found. Run spec-protocol init.",
     );
   }
 
   const absoluteInput = resolveAbsolute(exportPath);
   console.log(
     chalk.gray(
-      `Executando: ${config.specKit.command} ${[...config.specKit.args, absoluteInput].join(" ")}`,
+      `Running: ${config.specKit.command} ${[...config.specKit.args, absoluteInput].join(" ")}`,
     ),
   );
   console.log("");

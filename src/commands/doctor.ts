@@ -11,13 +11,7 @@ import {
   getConfigPath,
   getTemplatesDir,
 } from "../lib/paths.js";
-import { LEGACY_PROTOCOL_DIR, RTA_SKILL_DIRS } from "../constants.js";
-import {
-  DEFAULT_LANGUAGE,
-  getLanguageConfigIssue,
-  resolveLanguage,
-  SUPPORTED_LANGUAGES,
-} from "../lib/i18n.js";
+import { LEGACY_PROTOCOL_DIR, SPEC_PROTOCOL_SKILL_DIRS } from "../constants.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -39,9 +33,8 @@ export async function runDoctor(cwd: string = process.cwd()): Promise<void> {
     checkNode(),
     checkProtocolDir(cwd),
     checkConfigJson(cwd),
-    checkConfigLanguage(cwd),
     checkArtifactTemplates(),
-    checkRtaSkills(cwd),
+    checkSpecProtocolSkills(cwd),
     checkSkillPack(),
     checkSpecify(),
     checkLegacyDir(cwd),
@@ -76,9 +69,9 @@ export async function runDoctor(cwd: string = process.cwd()): Promise<void> {
   console.log("");
 
   if (hasErrors) {
-    console.log(chalk.red("  ✗ Corrija os itens acima antes de continuar."));
+    console.log(chalk.red("  ✗ Fix the items above before continuing."));
   } else {
-    console.log(chalk.green("  ✓ Ambiente OK — pronto para usar o RTA."));
+    console.log(chalk.green("  ✓ Environment OK — ready to use Spec Protocol."));
   }
 
   console.log("");
@@ -91,8 +84,8 @@ async function checkNode(): Promise<CheckResult> {
   return {
     label: "Node.js >= 18",
     ok,
-    message: ok ? version : `${version} (requer >= 18)`,
-    action: ok ? undefined : "Atualize o Node.js: https://nodejs.org",
+    message: ok ? version : `${version} (requires >= 18)`,
+    action: ok ? undefined : "Update Node.js: https://nodejs.org",
     blocking: true,
   };
 }
@@ -101,9 +94,9 @@ async function checkProtocolDir(cwd: string): Promise<CheckResult> {
   const root = getProtocolRoot(cwd);
   const ok = await pathExists(root);
   return {
-    label: ".spec-protocol/ existe",
+    label: ".spec-protocol/ exists",
     ok,
-    message: ok ? "encontrada" : "não encontrada",
+    message: ok ? "found" : "not found",
     action: ok ? undefined : "spec-protocol init",
     blocking: true,
   };
@@ -113,9 +106,9 @@ async function checkConfigJson(cwd: string): Promise<CheckResult> {
   const configPath = getConfigPath(cwd);
   if (!(await pathExists(configPath))) {
     return {
-      label: "config.json válido",
+      label: "config.json valid",
       ok: false,
-      message: "não encontrado",
+      message: "not found",
       action: "spec-protocol init",
       blocking: true,
     };
@@ -123,97 +116,43 @@ async function checkConfigJson(cwd: string): Promise<CheckResult> {
   try {
     const raw = await readFile(configPath, "utf-8");
     JSON.parse(raw);
-    return { label: "config.json válido", ok: true, message: "OK", blocking: false };
+    return { label: "config.json valid", ok: true, message: "OK", blocking: false };
   } catch {
     return {
-      label: "config.json válido",
+      label: "config.json valid",
       ok: false,
-      message: "JSON inválido",
-      action: "spec-protocol init (recria o config)",
+      message: "invalid JSON",
+      action: "spec-protocol init (recreates config)",
       blocking: true,
-    };
-  }
-}
-
-async function checkConfigLanguage(cwd: string): Promise<CheckResult> {
-  const configPath = getConfigPath(cwd);
-  if (!(await pathExists(configPath))) {
-    return {
-      label: "config.language",
-      ok: false,
-      message: "config.json ausente",
-      action: "spec-protocol init",
-      blocking: false,
-    };
-  }
-  try {
-    const raw = await readFile(configPath, "utf-8");
-    const parsed = JSON.parse(raw) as { language?: unknown };
-    const issue = getLanguageConfigIssue(parsed.language);
-    if (issue === "missing") {
-      return {
-        label: "config.language",
-        ok: false,
-        message: `ausente — usando ${DEFAULT_LANGUAGE}`,
-        action: "spec-protocol init (backfill)",
-        blocking: false,
-      };
-    }
-    if (issue === "invalid") {
-      const normalized = resolveLanguage(parsed.language);
-      return {
-        label: "config.language",
-        ok: false,
-        message: `inválido: ${JSON.stringify(parsed.language)} → use ${normalized}`,
-        action: "spec-protocol init ou edite config.json",
-        blocking: false,
-      };
-    }
-    return {
-      label: "config.language",
-      ok: true,
-      message: String(parsed.language),
-      blocking: false,
-    };
-  } catch {
-    return {
-      label: "config.language",
-      ok: false,
-      message: "não foi possível ler config.json",
-      blocking: false,
     };
   }
 }
 
 async function checkArtifactTemplates(): Promise<CheckResult> {
   const required = ["spec.md", "plan.md", "tasks.md"];
+  const templatesDir = getTemplatesDir();
   const missing: string[] = [];
 
-  for (const language of SUPPORTED_LANGUAGES) {
-    const templatesDir = getTemplatesDir(language);
-    for (const file of required) {
-      if (!(await pathExists(join(templatesDir, file)))) {
-        missing.push(`${language}/${file}`);
-      }
+  for (const file of required) {
+    if (!(await pathExists(join(templatesDir, file)))) {
+      missing.push(file);
     }
   }
 
   const ok = missing.length === 0;
   return {
-    label: "templates artefatos i18n",
+    label: "artifact templates",
     ok,
-    message: ok
-      ? "pt-BR/en/es spec/plan/tasks OK"
-      : `faltam: ${missing.join(", ")}`,
-    action: ok ? undefined : "Reinstale: npm install -g spec-protocol-cli",
+    message: ok ? "spec/plan/tasks OK" : `missing: ${missing.join(", ")}`,
+    action: ok ? undefined : "Reinstall: npm install -g spec-protocol-cli",
     blocking: true,
   };
 }
 
-async function checkRtaSkills(cwd: string): Promise<CheckResult> {
+async function checkSpecProtocolSkills(cwd: string): Promise<CheckResult> {
   const skillsDir = getAgentsSkillsDir(cwd);
   const missing: string[] = [];
-  for (const skill of RTA_SKILL_DIRS) {
+  for (const skill of SPEC_PROTOCOL_SKILL_DIRS) {
     const skillPath = join(skillsDir, skill, "SKILL.md");
     if (!(await pathExists(skillPath))) {
       missing.push(skill);
@@ -221,11 +160,11 @@ async function checkRtaSkills(cwd: string): Promise<CheckResult> {
   }
   const ok = missing.length === 0;
   return {
-    label: ".agents/skills RTA instaladas",
+    label: ".agents/skills installed",
     ok,
     message: ok
-      ? `${RTA_SKILL_DIRS.length} skills`
-      : `faltam ${missing.length}: ${missing.slice(0, 2).join(", ")}…`,
+      ? `${SPEC_PROTOCOL_SKILL_DIRS.length} skills`
+      : `missing ${missing.length}: ${missing.slice(0, 2).join(", ")}…`,
     action: ok ? undefined : "spec-protocol init",
     blocking: false,
   };
@@ -233,12 +172,14 @@ async function checkRtaSkills(cwd: string): Promise<CheckResult> {
 
 async function checkSkillPack(): Promise<CheckResult> {
   const packDir = join(getPackageRoot(), ".agents", "skills");
-  const ok = await pathExists(join(packDir, "rta-triagem", "SKILL.md"));
+  const ok = await pathExists(
+    join(packDir, "spec-protocol-triage", "SKILL.md"),
+  );
   return {
-    label: "skill pack no pacote npm",
+    label: "skill pack in npm package",
     ok,
-    message: ok ? "encontrado" : "não encontrado",
-    action: ok ? undefined : "Reinstale: npm install -g spec-protocol-cli",
+    message: ok ? "found" : "not found",
+    action: ok ? undefined : "Reinstall: npm install -g spec-protocol-cli",
     blocking: true,
   };
 }
@@ -246,13 +187,18 @@ async function checkSkillPack(): Promise<CheckResult> {
 async function checkSpecify(): Promise<CheckResult> {
   try {
     await execFileAsync("specify", ["--version"]);
-    return { label: "specify no PATH (Spec-Kit)", ok: true, message: "encontrado", blocking: false };
+    return {
+      label: "specify on PATH (Spec-Kit)",
+      ok: true,
+      message: "found",
+      blocking: false,
+    };
   } catch {
     return {
-      label: "specify no PATH (Spec-Kit)",
+      label: "specify on PATH (Spec-Kit)",
       ok: false,
-      message: "não encontrado (opcional)",
-      action: "Instale o GitHub Spec-Kit para usar run-spec",
+      message: "not found (optional)",
+      action: "Install GitHub Spec-Kit to use run-spec",
       blocking: false,
     };
   }
@@ -262,9 +208,9 @@ async function checkLegacyDir(cwd: string): Promise<CheckResult> {
   const legacyPath = join(cwd, LEGACY_PROTOCOL_DIR);
   const exists = await pathExists(legacyPath);
   return {
-    label: "Pasta legada spec-protocol/",
+    label: "legacy spec-protocol/ folder",
     ok: !exists,
-    message: exists ? "encontrada — migração necessária" : "não encontrada (OK)",
+    message: exists ? "found — migration required" : "not found (OK)",
     action: exists ? "mv spec-protocol .spec-protocol" : undefined,
     blocking: false,
   };
@@ -274,20 +220,20 @@ async function checkGitignore(cwd: string): Promise<CheckResult> {
   const gitignorePath = join(cwd, ".gitignore");
   if (!(await pathExists(gitignorePath))) {
     return {
-      label: ".gitignore configurado",
+      label: ".gitignore configured",
       ok: false,
-      message: ".gitignore não existe",
-      action: "spec-protocol init (cria/atualiza automaticamente)",
+      message: ".gitignore missing",
+      action: "spec-protocol init (creates/updates automatically)",
       blocking: false,
     };
   }
   const content = await readFile(gitignorePath, "utf-8");
   const ok = content.includes(".spec-protocol");
   return {
-    label: ".gitignore configurado",
+    label: ".gitignore configured",
     ok,
-    message: ok ? "menciona .spec-protocol" : "não menciona .spec-protocol",
-    action: ok ? undefined : "spec-protocol init (ou adicione manualmente ao .gitignore)",
+    message: ok ? "mentions .spec-protocol" : "does not mention .spec-protocol",
+    action: ok ? undefined : "spec-protocol init (or add manually to .gitignore)",
     blocking: false,
   };
 }

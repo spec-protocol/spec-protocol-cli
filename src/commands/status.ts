@@ -1,6 +1,5 @@
 import chalk from "chalk";
 import { ARTIFACTS } from "../constants.js";
-import { readConfig } from "../lib/config.js";
 import {
   assertProtocolInitialized,
   getAllArtifactInfos,
@@ -8,13 +7,7 @@ import {
   type ArtifactStatus,
 } from "../lib/task-progress.js";
 import { pathExists } from "../lib/fs.js";
-import {
-  DEFAULT_LANGUAGE,
-  getArtifactLabel,
-  getStatusLabels,
-  type StatusLabels,
-  type SupportedLanguage,
-} from "../lib/i18n.js";
+import { getArtifactLabel, getStatusLabels, type StatusLabels } from "../lib/i18n.js";
 import { getTaskDir } from "../lib/paths.js";
 import { validateTaskId } from "../lib/validate.js";
 
@@ -30,13 +23,11 @@ export async function runStatus(
   const taskDir = getTaskDir(cwd, taskId);
   if (!(await pathExists(taskDir))) {
     throw new Error(
-      `Tarefa "${taskId}" não encontrada. Execute: spec-protocol new ${taskId}`,
+      `Task "${taskId}" not found. Run: spec-protocol new ${taskId}`,
     );
   }
 
-  const config = await readConfig(cwd);
-  const language = config?.language ?? DEFAULT_LANGUAGE;
-  const labels = getStatusLabels(language);
+  const labels = getStatusLabels();
   const infos = await getAllArtifactInfos(taskDir);
   const completedCount = infos.filter((i) => i.status === "OK").length;
 
@@ -48,7 +39,7 @@ export async function runStatus(
   console.log("");
 
   for (const info of infos) {
-    printArtifactRow(info, cwd, language, labels);
+    printArtifactRow(info, cwd, labels);
   }
 
   console.log("");
@@ -59,7 +50,6 @@ export async function runStatus(
 function printArtifactRow(
   info: ArtifactInfo,
   cwd: string,
-  language: SupportedLanguage,
   labels: StatusLabels,
 ): void {
   const { artifact, status, path } = info;
@@ -67,7 +57,7 @@ function printArtifactRow(
   const label = statusLabel(status, labels);
   const relPath = path.replace(cwd + "/", "");
   const critical = artifact.critical ? chalk.gray(labels.criticalBadge) : "";
-  const artifactLabel = getArtifactLabel(artifact.id, language);
+  const artifactLabel = getArtifactLabel(artifact.id);
 
   console.log(
     `  ${icon} ${chalk.bold(artifact.file)} — ${artifactLabel}${critical}  ${label}`,

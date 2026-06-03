@@ -7,8 +7,8 @@ dist/
 .env.*
 *.tgz
 .agents/skills/*
-!.agents/skills/rta-*/
-!.agents/skills/rta-*/**
+!.agents/skills/spec-protocol-*/
+!.agents/skills/spec-protocol-*/**
 .cursor/
 .docs/
 .spec-protocol/
