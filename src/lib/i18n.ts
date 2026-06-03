@@ -37,6 +37,9 @@ const TAXONOMY_TAG =
 const SECTION_HEADINGS: Record<SectionKey, string[]> = {
   "spec.classification": [
     "Spec Protocol Classification",
+    "AISP Classification",
+    "Classificação AISP",
+    "Clasificación AISP",
     "RTA Classification",
     "Classificação RTA",
     "Clasificación RTA",

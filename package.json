@@ -1,7 +1,7 @@
 {
   "name": "spec-protocol-cli",
   "version": "0.3.0",
-  "description": "CLI do AI Spec Protocol — RTA / AI-ATR (Refinamento Técnico Assistido por IA) com skills e artefatos spec/plan/tasks",
+  "description": "CLI do AI Spec Protocol — AISP - AI Spec Protocol / AI-Assisted Technical Refinement com skills e artefatos spec/plan/tasks",
   "type": "module",
   "bin": {
     "spec-protocol": "./dist/index.js"

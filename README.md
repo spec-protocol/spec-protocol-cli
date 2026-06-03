@@ -5,7 +5,7 @@
 [node version](https://nodejs.org)
 [PRs Welcome](https://github.com/spec-protocol/spec-protocol-cli/pulls)
 
-CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistidas por IA**, com fluxo **RTA / AI-ATR** para refinamento técnico antes da implementação.
+CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistidas por IA**, com fluxo **AISP** para refinamento técnico antes da implementação.
 
 ## Idiomas / Languages / Español
 
@@ -17,15 +17,15 @@ CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistid
 
 ## Português
 
-### RTA / AI-ATR — Refinamento Técnico Assistido por IA
+### AISP - AI Spec Protocol / AI-Assisted Technical Refinement
 
-O par **RTA / AI-ATR (Refinamento Técnico Assistido por IA / AI-Assisted Technical Refinement)** é o fluxo operacional guiado pelo **Protocolo de Especificações Assistidas por IA**. Ele ajuda times de software a reduzir incerteza antes da implementação, usando skills de IA e artefatos versionáveis no próprio repositório.
+O fluxo **AISP (AI Spec Protocol / AI-Assisted Technical Refinement)** é o refinamento técnico assistido por IA guiado pelo **AI Spec Protocol**. Ele ajuda times de software a reduzir incerteza antes da implementação, usando skills de IA e artefatos versionáveis no próprio repositório.
 
 Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `tasks.md`, instalando também as skills Spec Protocol em `.agents/skills/`.
 
 ### Recursos principais
 
-- **Skills RTA na IDE**: pack instalado em `.agents/skills/` para uso com Cursor, Antigravity e ferramentas compatíveis.
+- **Skills AISP na IDE**: pack instalado em `.agents/skills/` para uso com Cursor, Antigravity e ferramentas compatíveis.
 - **Artefatos do protocolo**: `spec.md`, `plan.md` e `tasks.md` em `.spec-protocol/tasks/<ID>/`.
 - **Validação CI**: `validate` exige `spec.md` e `plan.md` preenchidos antes do export.
 - **Spec-Kit**: `export` consolida artefatos em `spec-kit-input.md`.
@@ -45,7 +45,7 @@ Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `ta
 | `@spec-protocol-exception`  | Registra bypass formal com risco aceito         |
 
 
-### Convenções RTA
+### Convenções AISP
 
 `@spec-protocol-triage` é a entrada principal. Ela classifica tipo de trabalho e risco; demandas de baixo risco só pulam para `@spec-protocol-plan` quando têm objetivo claro, escopo delimitado, critério testável e nenhuma decisão `[CRITICAL]` pendente.
 
@@ -104,7 +104,7 @@ O executável da CLI responde pelo comando `spec-protocol`.
 | `spec-protocol new <task-id>`                               | Cria `spec.md`, `plan.md` e `tasks.md`                      |
 | `spec-protocol list`                                        | Lista tarefas e progresso dos artefatos                     |
 | `spec-protocol status <task-id>`                            | Exibe painel de preenchimento dos artefatos                 |
-| `spec-protocol context <task-id>`                           | Mostra roteiro RTA e skills sugeridas para a IDE            |
+| `spec-protocol context <task-id>`                           | Mostra roteiro AISP e skills sugeridas para a IDE            |
 | `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Abre artefato no editor                                     |
 | `spec-protocol validate <task-id>`                          | Valida artefatos críticos para CI                           |
 | `spec-protocol export <task-id>`                            | Gera `spec-kit-input.md`                                    |
@@ -173,9 +173,9 @@ Este projeto é licenciado sob os termos da [Licença MIT](LICENSE).
 
 ## English
 
-### RTA / AI-ATR — AI-Assisted Technical Refinement
+### AISP - AI Spec Protocol / AI-Assisted Technical Refinement
 
-The **RTA / AI-ATR (Refinamento Técnico Assistido por IA / AI-Assisted Technical Refinement)** pair is the operational workflow guided by the **AI Spec Protocol**. It helps software teams reduce uncertainty before implementation by using AI skills and versioned artifacts inside the repository.
+The **AISP (AI Spec Protocol / AI-Assisted Technical Refinement)** workflow is AI-assisted technical refinement guided by the **AI Spec Protocol**. It helps software teams reduce uncertainty before implementation by using AI skills and versioned artifacts inside the repository.
 
 The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`, and installs the Spec Protocol skills under `.agents/skills/`.
 
@@ -201,7 +201,7 @@ The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`,
 | `@spec-protocol-exception`  | Records formal bypass with accepted risk                 |
 
 
-### RTA conventions
+### AISP conventions
 
 `@spec-protocol-triage` is the main entry point. It classifies work type and risk; low-risk tasks only skip to `@spec-protocol-plan` when they have a clear objective, bounded scope, at least one testable criterion, and no pending `[CRITICAL]` decision.
 
@@ -260,7 +260,7 @@ The CLI executable is `spec-protocol`.
 | `spec-protocol new <task-id>`                               | Creates `spec.md`, `plan.md`, and `tasks.md`                    |
 | `spec-protocol list`                                        | Lists tasks and artifact progress                               |
 | `spec-protocol status <task-id>`                            | Shows artifact completion status                                |
-| `spec-protocol context <task-id>`                           | Shows RTA guidance and suggested IDE skills                     |
+| `spec-protocol context <task-id>`                           | Shows AISP guidance and suggested IDE skills                     |
 | `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Opens an artifact in the editor                                 |
 | `spec-protocol validate <task-id>`                          | Validates critical artifacts for CI                             |
 | `spec-protocol export <task-id>`                            | Generates `spec-kit-input.md`                                   |
@@ -329,15 +329,15 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Español
 
-### RTA / AI-ATR — Refinamiento Técnico Asistido por IA
+### AISP - AI Spec Protocol / AI-Assisted Technical Refinement
 
-El par **RTA / AI-ATR (Refinamiento Técnico Asistido por IA / AI-Assisted Technical Refinement)** es el flujo operativo guiado por el **Protocolo de Especificaciones Asistidas por IA**. Ayuda a equipos de software a reducir incertidumbre antes de la implementación mediante skills de IA y artefactos versionables dentro del repositorio.
+El flujo **AISP (AI Spec Protocol / AI-Assisted Technical Refinement)** es el refinamiento técnico asistido por IA guiado por el **AI Spec Protocol**. Ayuda a equipos de software a reducir incertidumbre antes de la implementación mediante skills de IA y artefactos versionables dentro del repositorio.
 
 La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, y instala las skills Spec Protocol en `.agents/skills/`.
 
 ### Funcionalidades principales
 
-- **Skills RTA en la IDE**: pack instalado en `.agents/skills/` para Cursor, Antigravity y herramientas compatibles.
+- **Skills AISP en la IDE**: pack instalado en `.agents/skills/` para Cursor, Antigravity y herramientas compatibles.
 - **Artefactos del protocolo**: `spec.md`, `plan.md` y `tasks.md` en `.spec-protocol/tasks/<ID>/`.
 - **Validación CI**: `validate` exige `spec.md` y `plan.md` completos antes del export.
 - **Puente con Spec-Kit**: `export` consolida artefactos en `spec-kit-input.md`.
@@ -357,7 +357,7 @@ La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, 
 | `@spec-protocol-exception`  | Registra bypass formal con riesgo aceptado            |
 
 
-### Convenciones RTA
+### Convenciones AISP
 
 `@spec-protocol-triage` es el punto de entrada principal. Clasifica tipo de trabajo y riesgo; las demandas de bajo riesgo solo saltan a `@spec-protocol-plan` cuando tienen objetivo claro, alcance delimitado, criterio testeable y ninguna decisión `[CRITICAL]` pendiente.
 
@@ -416,7 +416,7 @@ El ejecutable de la CLI es `spec-protocol`.
 | `spec-protocol new <task-id>`                               | Crea `spec.md`, `plan.md` y `tasks.md`                      |
 | `spec-protocol list`                                        | Lista demandas y progreso de artefactos                     |
 | `spec-protocol status <task-id>`                            | Muestra estado de completitud de los artefactos             |
-| `spec-protocol context <task-id>`                           | Muestra guía RTA y skills sugeridas para la IDE             |
+| `spec-protocol context <task-id>`                           | Muestra guía AISP y skills sugeridas para la IDE             |
 | `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Abre un artefacto en el editor                              |
 | `spec-protocol validate <task-id>`                          | Valida artefactos críticos para CI                          |
 | `spec-protocol export <task-id>`                            | Genera `spec-kit-input.md`                                  |
