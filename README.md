@@ -7,7 +7,7 @@
 
 CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistidas por IA**, com fluxo **AISP** para refinamento técnico antes da implementação.
 
-## Idiomas / Languages / Español
+## Idiomas / Languages
 
 - [Português](#português)
 - [English](#english)
@@ -17,7 +17,8 @@ CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistid
 
 ## Português
 
-### AISP - AI Spec Protocol / AI-Assisted Technical Refinement
+### AISP - Protocolo de Especificações / RTA Refinamento Técnico Assistido Por IA
+#### AISP - AI Spec Protocol / IA-ATR AI-Assisted Technical Refinement
 
 O fluxo **AISP (AI Spec Protocol / AI-Assisted Technical Refinement)** é o refinamento técnico assistido por IA guiado pelo **AI Spec Protocol**. Ele ajuda times de software a reduzir incerteza antes da implementação, usando skills de IA e artefatos versionáveis no próprio repositório.
 
@@ -105,7 +106,7 @@ O executável da CLI responde pelo comando `spec-protocol`.
 | `spec-protocol list`                                        | Lista tarefas e progresso dos artefatos                     |
 | `spec-protocol status <task-id>`                            | Exibe painel de preenchimento dos artefatos                 |
 | `spec-protocol context <task-id>`                           | Mostra roteiro AISP e skills sugeridas para a IDE            |
-| `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Abre artefato no editor                                     |
+| `spec-protocol open <task-id> [--artifact spec,plan,tasks]` | Abre artefato no editor                                     |
 | `spec-protocol validate <task-id>`                          | Valida artefatos críticos para CI                           |
 | `spec-protocol export <task-id>`                            | Gera `spec-kit-input.md`                                    |
 | `spec-protocol run-spec <task-id>`                          | Executa Spec-Kit com o export                               |
@@ -261,7 +262,7 @@ The CLI executable is `spec-protocol`.
 | `spec-protocol list`                                        | Lists tasks and artifact progress                               |
 | `spec-protocol status <task-id>`                            | Shows artifact completion status                                |
 | `spec-protocol context <task-id>`                           | Shows AISP guidance and suggested IDE skills                     |
-| `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Opens an artifact in the editor                                 |
+| `spec-protocol open <task-id> [--artifact spec,plan,tasks]` | Opens an artifact in the editor                                 |
 | `spec-protocol validate <task-id>`                          | Validates critical artifacts for CI                             |
 | `spec-protocol export <task-id>`                            | Generates `spec-kit-input.md`                                   |
 | `spec-protocol run-spec <task-id>`                          | Runs Spec-Kit with the generated export                         |
@@ -417,7 +418,7 @@ El ejecutable de la CLI es `spec-protocol`.
 | `spec-protocol list`                                        | Lista demandas y progreso de artefactos                     |
 | `spec-protocol status <task-id>`                            | Muestra estado de completitud de los artefactos             |
 | `spec-protocol context <task-id>`                           | Muestra guía AISP y skills sugeridas para la IDE             |
-| `spec-protocol open <task-id> [--artifact spec|plan|tasks]` | Abre un artefacto en el editor                              |
+| `spec-protocol open <task-id> [--artifact spec,plan,tasks]` | Abre un artefacto en el editor                              |
 | `spec-protocol validate <task-id>`                          | Valida artefactos críticos para CI                          |
 | `spec-protocol export <task-id>`                            | Genera `spec-kit-input.md`                                  |
 | `spec-protocol run-spec <task-id>`                          | Ejecuta Spec-Kit con el export generado                     |
@@ -480,14 +481,6 @@ Después de `npm link`, el binario local queda disponible como `spec-protocol`.
 ### Licencia
 
 Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
-
-## 🛡️ Segurança
-
-A segurança e integridade do seu repositório de código são nossas maiores prioridades:
-
-- **Whitelist de Arquivos**: O empacotamento para publicação no npm utiliza a regra estrita `files` do `package.json`. Apenas a pasta `dist/` (compilada), a pasta de `templates/`, o `README.md` e o `LICENSE` são enviados. Arquivos locais de configuração, arquivos `.env`, chaves privadas e o código-fonte original ficam 100% de fora do pacote final.
-- **Prevenção de Execução de Shell**: Nenhuma chamada a processos filhos (como abertura de editores via `open` ou execução do Spec-Kit via `specify`) realiza avaliação arbitrária de string no shell (parâmetro `shell: false`). As chamadas são diretas usando vetores de argumentos (`spawn`/`execFile`), prevenindo riscos de command injection.
-- **Nota de Auditoria**: Mantemos nossas dependências livres de vulnerabilidades críticas através de auditorias recorrentes do `npm audit`.
 
 ---
 
