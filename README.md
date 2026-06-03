@@ -1,9 +1,9 @@
 # AI Spec Protocol CLI
 
-[npm version](https://www.npmjs.com/package/spec-protocol-cli)
-[license](https://github.com/spec-protocol/spec-protocol-cli/blob/main/LICENSE)
-[node version](https://nodejs.org)
-[PRs Welcome](https://github.com/spec-protocol/spec-protocol-cli/pulls)
+[![npm version](https://img.shields.io/npm/v/spec-protocol-cli?logo=npm&color=brightgreen)](https://www.npmjs.com/package/spec-protocol-cli)
+[![license](https://img.shields.io/npm/l/spec-protocol-cli?color=blue)](https://github.com/spec-protocol/spec-protocol-cli/blob/main/LICENSE)
+[![node version](https://img.shields.io/node/v/spec-protocol-cli?color=yellow)](https://nodejs.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/spec-protocol/spec-protocol-cli/pulls)
 
 CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistidas por IA**, com fluxo **AISP** para refinamento técnico antes da implementação.
 
