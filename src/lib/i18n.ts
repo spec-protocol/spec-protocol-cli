@@ -5,7 +5,7 @@ export type CanonicalStatus =
   | "EXCEPTION APPROVED"
   | "EXCEPTION NOT RECOMMENDED";
 
-/** Pending [CRITICAL] tag (legacy PT aliases accepted in 0.3.0). */
+/** Pending [CRITICAL] tag (legacy PT aliases accepted in 2.0.0). */
 export const DECISION_TAGS = {
   CRITICAL: /\[CRITICAL\]|\[CRÍTICO\]|\[CRITICO\]/i,
 } as const;

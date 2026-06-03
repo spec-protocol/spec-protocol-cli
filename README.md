@@ -49,7 +49,7 @@ Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `ta
 
 `@spec-protocol-triage` é a entrada principal. Ela classifica tipo de trabalho e risco; demandas de baixo risco só pulam para `@spec-protocol-plan` quando têm objetivo claro, escopo delimitado, critério testável e nenhuma decisão `[CRITICAL]` pendente.
 
-Use uma taxonomia única em todos os artefatos (inglês canônico; aliases PT aceitos pelo `validate` na 0.3.0):
+Use uma taxonomia única em todos os artefatos (inglês canônico; aliases PT aceitos pelo `validate` na 2.0.0):
 
 - `[CRITICAL]`: bloqueia início ou pode mudar escopo/solução.
 - `[RISK]`: pode gerar efeito colateral relevante.
@@ -138,11 +138,11 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 - Idioma do chat com o usuário é decisão do agente na IDE; a CLI não persiste locale.
 - Nomes técnicos: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
 
-### Upgrade (0.3.0+)
+### Upgrade (2.0.0+)
 
-- Reinstale: `npm install -g spec-protocol-cli@0.3.0`
+- Reinstale: `npm install -g spec-protocol-cli@2.0.0`
 - Rode `spec-protocol init` para instalar skills `spec-protocol-*` (substituem `rta-*` legadas).
-- Recrie tarefas com headings/tags antigos se o `validate` falhar; aliases PT ainda aceitos na 0.3.0.
+- Recrie tarefas com headings/tags antigos se o `validate` falhar; aliases PT ainda aceitos na 2.0.0.
 - Campo `config.language` legado é ignorado.
 - Valide com `spec-protocol doctor`.
 - **Não suportado:** tarefas com subpastas `artifacts/` e `answers/`. Recrie com `spec-protocol new <ID>`.
@@ -205,7 +205,7 @@ The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`,
 
 `@spec-protocol-triage` is the main entry point. It classifies work type and risk; low-risk tasks only skip to `@spec-protocol-plan` when they have a clear objective, bounded scope, at least one testable criterion, and no pending `[CRITICAL]` decision.
 
-Use a single taxonomy across all artifacts (English canonical; PT aliases accepted by `validate` in 0.3.0):
+Use a single taxonomy across all artifacts (English canonical; PT aliases accepted by `validate` in 2.0.0):
 
 - `[CRITICAL]`: blocks start or may change scope/solution.
 - `[RISK]`: may cause relevant side effects.
@@ -294,11 +294,11 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 - Chat language with the user is the agent's choice in the IDE; the CLI does not persist locale.
 - Technical names: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
 
-### Upgrade (0.3.0+)
+### Upgrade (2.0.0+)
 
-- Reinstall: `npm install -g spec-protocol-cli@0.3.0`
+- Reinstall: `npm install -g spec-protocol-cli@2.0.0`
 - Run `spec-protocol init` to install `spec-protocol-*` skills (replace legacy `rta-*`).
-- Recreate tasks with old headings/tags if `validate` fails; PT aliases still accepted in 0.3.0.
+- Recreate tasks with old headings/tags if `validate` fails; PT aliases still accepted in 2.0.0.
 - Legacy `config.language` field is ignored.
 - Validate with `spec-protocol doctor`.
 - **Not supported:** tasks with `artifacts/` and `answers/` subfolders. Recreate with `spec-protocol new <ID>`.
@@ -361,7 +361,7 @@ La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, 
 
 `@spec-protocol-triage` es el punto de entrada principal. Clasifica tipo de trabajo y riesgo; las demandas de bajo riesgo solo saltan a `@spec-protocol-plan` cuando tienen objetivo claro, alcance delimitado, criterio testeable y ninguna decisión `[CRITICAL]` pendiente.
 
-Use una taxonomía única en todos los artefactos (inglés canónico; aliases PT aceptados por `validate` en 0.3.0):
+Use una taxonomía única en todos los artefactos (inglés canónico; aliases PT aceptados por `validate` en 2.0.0):
 
 - `[CRITICAL]`: bloquea inicio o puede cambiar alcance/solución.
 - `[RISK]`: puede generar efecto colateral relevante.
@@ -450,11 +450,11 @@ Después de `init`, la CLI crea `.spec-protocol/config.json`:
 - El idioma del chat con el usuario lo decide el agente en la IDE; la CLI no persiste locale.
 - Nombres técnicos: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
 
-### Actualización (0.3.0+)
+### Actualización (2.0.0+)
 
-- Reinstale: `npm install -g spec-protocol-cli@0.3.0`
+- Reinstale: `npm install -g spec-protocol-cli@2.0.0`
 - Ejecute `spec-protocol init` para instalar skills `spec-protocol-*` (reemplazan `rta-*` legadas).
-- Recree tareas con headings/tags antiguos si `validate` falla; aliases PT aún aceptados en 0.3.0.
+- Recree tareas con headings/tags antiguos si `validate` falla; aliases PT aún aceptados en 2.0.0.
 - Campo `config.language` legado se ignora.
 - Valide con `spec-protocol doctor`.
 - **No soportado:** tareas con subcarpetas `artifacts/` y `answers/`. Recree con `spec-protocol new <ID>`.

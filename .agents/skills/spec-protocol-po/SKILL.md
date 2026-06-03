@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-po
 description: Gera comunicação estruturada para o PO com decisões A/B, impacto e bloco de decisões pendentes para spec.md. Ativar quando DoR indicar PARTIALLY READY ou NOT READY por decisão de negócio.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [medium, high]
 work-types: [bug, feature, integration, epic, exploratory]
 next-skill: "@spec-protocol-revalidate"

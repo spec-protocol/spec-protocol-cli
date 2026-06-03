@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-exception
 description: Formaliza bypass do fluxo do Spec Protocol com motivo legítimo, riscos aceitos, responsável e revisão pós-entrega. Ativar em incidentes, deadlines regulatórios, bloqueios comerciais críticos ou pressão para pular o processo.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [medium, high]
 work-types: [incident, bug, feature, integration]
 next-skill: "@spec-protocol-plan"

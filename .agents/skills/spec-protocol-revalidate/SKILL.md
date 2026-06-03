@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-revalidate
 description: Revalida respostas do PO contra card, spec.md e codebase, fecha decisões pendentes e produz insumo para plan.md. Ativar após resposta a uma devolutiva enviada com @spec-protocol-po.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [medium, high]
 work-types: [bug, feature, integration, epic, exploratory]
 next-skill: "@spec-protocol-plan"

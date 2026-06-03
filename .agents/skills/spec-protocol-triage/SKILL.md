@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-triage
 description: Classifica card/demanda por tipo, risco e prontidão mínima; define fluxo do Spec Protocol recomendado. Ativar automaticamente ao receber card, bug, épico, incidente ou pedido de refinamento técnico.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [low, medium, high]
 work-types: [bug, feature, refactor, integration, epic, exploratory, incident]
 next-skill: "@spec-protocol-analyze"

@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-dor
 description: Avalia Definition of Ready proporcional ao risco, registra decisão no spec.md e emite Go/No-Go, recomendando PO, plano ou exceção. Ativar quando já existir spec.md ou análise técnica e o DEV quiser saber se pode codar.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [low, medium, high]
 work-types: [bug, feature, refactor, integration, epic, exploratory, incident]
 next-skill: "@spec-protocol-plan"

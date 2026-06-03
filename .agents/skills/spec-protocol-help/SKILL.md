@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-help
 description: Explica o Spec Protocol, o papel de cada skill, o uso recomendado de modos Ask/Agent/Plan e comandos básicos da spec-protocol-cli. Ativar quando o usuário pedir ajuda, documentação ou onboarding do Spec Protocol.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [low, medium, high]
 work-types: [bug, feature, refactor, integration, epic, exploratory, incident]
 next-skill: "/spec-protocol-help"

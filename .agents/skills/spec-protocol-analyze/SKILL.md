@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-analyze
 description: Analisa card contra codebase, separa fatos de hipóteses, identifica lacunas e propõe atualização rastreável para spec.md. Ativar após spec-protocol-triagem quando risco for médio/alto ou houver incerteza técnica.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [medium, high]
 work-types: [bug, feature, refactor, integration, epic, exploratory]
 next-skill: "@spec-protocol-dor"

@@ -1,5 +1,10 @@
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import chalk from "chalk";
+
+const { version } = createRequire(import.meta.url)("../package.json") as {
+  version: string;
+};
 import { printBanner } from "./banner.js";
 import { runInit } from "./commands/init.js";
 import { runNew } from "./commands/new.js";
@@ -17,7 +22,7 @@ const program = new Command();
 program
   .name("spec-protocol")
   .description("AI Spec Protocol — assisted technical refinement")
-  .version("0.3.0");
+  .version(version);
 
 program
   .command("init")

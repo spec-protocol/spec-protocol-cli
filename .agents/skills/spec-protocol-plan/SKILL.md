@@ -1,7 +1,7 @@
 ---
 name: spec-protocol-plan
 description: Gera plan.md e tasks.md executáveis a partir de spec.md com status READY ou EXCEPTION APPROVED. Ativar quando a demanda estiver pronta para implementação ou com modo de exceção formal.
-version: 0.3.0
+version: 2.0.0
 risk-levels: [low, medium, high]
 work-types: [bug, feature, refactor, integration, epic, exploratory, incident]
 next-skill: ""

@@ -1,10 +1,10 @@
 {
   "name": "spec-protocol-cli",
-  "version": "0.3.0",
+  "version": "2.0.0",
   "description": "CLI do AI Spec Protocol — AISP - AI Spec Protocol / AI-Assisted Technical Refinement com skills e artefatos spec/plan/tasks",
   "type": "module",
   "bin": {
-    "spec-protocol": "./dist/index.js"
+    "spec-protocol": "dist/index.js"
   },
   "files": [
     "dist",
@@ -43,7 +43,7 @@
   "author": "spec-protocol",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spec-protocol/spec-protocol-cli.git"
+    "url": "git+https://github.com/spec-protocol/spec-protocol-cli.git"
   },
   "bugs": {
     "url": "https://github.com/spec-protocol/spec-protocol-cli/issues"
