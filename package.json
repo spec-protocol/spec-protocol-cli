@@ -1,6 +1,6 @@
 {
   "name": "spec-protocol-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "CLI do AI Spec Protocol — AISP - AI Spec Protocol / AI-Assisted Technical Refinement com skills e artefatos spec/plan/tasks",
   "type": "module",
   "bin": {
