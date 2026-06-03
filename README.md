@@ -3,7 +3,6 @@
 [![npm version](https://img.shields.io/npm/v/spec-protocol-cli?logo=npm&color=brightgreen)](https://www.npmjs.com/package/spec-protocol-cli)
 [![license](https://img.shields.io/npm/l/spec-protocol-cli?color=blue)](https://github.com/spec-protocol/spec-protocol-cli/blob/main/LICENSE)
 [![node version](https://img.shields.io/node/v/spec-protocol-cli?color=yellow)](https://nodejs.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/spec-protocol/spec-protocol-cli/pulls)
 
 CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistidas por IA**, com fluxo **AISP** para refinamento técnico antes da implementação.
 
@@ -11,7 +10,6 @@ CLI para adoção do **AI Spec Protocol / Protocolo de Especificações Assistid
 
 - [Português](#português)
 - [English](#english)
-- [Español](#español)
 
 ---
 
@@ -34,17 +32,18 @@ Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `ta
 
 ### Skills instaladas
 
+O comando `spec-protocol init` instala **sete** skills no pack npm. A skill `@spec-protocol-help` existe neste repositório para onboarding na IDE e **não** é copiada pelo `init`.
 
-| Skill                       | Função                                          |
-| --------------------------- | ----------------------------------------------- |
-| `@spec-protocol-triage`     | Classifica tipo, risco e fluxo recomendado      |
-| `@spec-protocol-analyze`    | Cruza card e codebase para atualizar `spec.md`  |
-| `@spec-protocol-dor`        | Decide prontidão proporcional ao risco          |
-| `@spec-protocol-po`         | Gera coespecificação com decisões A/B para o PO |
-| `@spec-protocol-revalidate` | Revalida respostas do PO e fecha lacunas        |
-| `@spec-protocol-plan`       | Gera/refina `plan.md` e `tasks.md`              |
-| `@spec-protocol-exception`  | Registra bypass formal com risco aceito         |
-
+| Skill                       | Função                                                          |
+| --------------------------- | --------------------------------------------------------------- |
+| `@spec-protocol-triage`     | Classifica tipo, risco e fluxo recomendado                      |
+| `@spec-protocol-analyze`    | Cruza card e codebase para atualizar `spec.md`                  |
+| `@spec-protocol-dor`        | Decide prontidão proporcional ao risco                          |
+| `@spec-protocol-po`         | Gera coespecificação com decisões A/B para o PO                 |
+| `@spec-protocol-revalidate` | Revalida respostas do PO e fecha lacunas                        |
+| `@spec-protocol-plan`       | Gera/refina `plan.md` e `tasks.md`                              |
+| `@spec-protocol-exception`  | Registra bypass formal com risco aceito                         |
+| `@spec-protocol-help`       | Onboarding do Spec Protocol na IDE (fluxo, skills, CLI) — só no repo |
 
 ### Convenções AISP
 
@@ -69,7 +68,7 @@ Use uma taxonomia única em todos os artefatos (inglês canônico; aliases PT ac
    Cria spec.md, plan.md e tasks.md para a demanda
 
 3. IDE + skills Spec Protocol
-   Use @spec-protocol-triage como entrada e siga o fluxo por risco
+   Use @spec-protocol-triage como entrada; @spec-protocol-help para visão geral do fluxo
 
 4. spec-protocol export
    Gera spec-kit-input.md a partir dos artefatos
@@ -98,9 +97,9 @@ yarn global add spec-protocol-cli
 
 O executável da CLI responde pelo comando `spec-protocol`.
 
-
 | Comando                                                     | Descrição                                                   |
 | ----------------------------------------------------------- | ----------------------------------------------------------- |
+| `spec-protocol` ou `spec-protocol --help`                   | Lista subcomandos e opções (help do Commander)              |
 | `spec-protocol init [--no-gitignore]`                       | Inicializa `.spec-protocol/` e instala skills Spec Protocol |
 | `spec-protocol new <task-id>`                               | Cria `spec.md`, `plan.md` e `tasks.md`                      |
 | `spec-protocol list`                                        | Lista tarefas e progresso dos artefatos                     |
@@ -111,7 +110,6 @@ O executável da CLI responde pelo comando `spec-protocol`.
 | `spec-protocol export <task-id>`                            | Gera `spec-kit-input.md`                                    |
 | `spec-protocol run-spec <task-id>`                          | Executa Spec-Kit com o export                               |
 | `spec-protocol doctor`                                      | Executa health check do protocolo, skills e templates       |
-
 
 ### Configuração
 
@@ -141,7 +139,7 @@ Após executar `init`, a CLI cria `.spec-protocol/config.json`:
 
 ### Upgrade (2.0.0+)
 
-- Reinstale: `npm install -g spec-protocol-cli@2.0.0`
+- Reinstale: `npm install -g spec-protocol-cli@2.0.1`
 - Rode `spec-protocol init` para instalar skills `spec-protocol-*` (substituem `rta-*` legadas).
 - Recrie tarefas com headings/tags antigos se o `validate` falhar; aliases PT ainda aceitos na 2.0.0.
 - Campo `config.language` legado é ignorado.
@@ -170,6 +168,11 @@ Após o `npm link`, o binário local fica disponível como `spec-protocol`.
 
 Este projeto é licenciado sob os termos da [Licença MIT](LICENSE).
 
+### Governança do projeto
+
+- [Convenção de versionamento](VERSIONING.md)
+- [Como contribuir](CONTRIBUTING.md)
+
 ---
 
 ## English
@@ -190,17 +193,18 @@ The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`,
 
 ### Installed skills
 
+`spec-protocol init` installs **seven** skills from the npm pack. `@spec-protocol-help` lives in this repository for IDE onboarding and is **not** copied by `init`.
 
-| Skill                       | Purpose                                                  |
-| --------------------------- | -------------------------------------------------------- |
-| `@spec-protocol-triage`     | Classifies work type, risk, and recommended flow         |
-| `@spec-protocol-analyze`    | Cross-checks card and codebase to update `spec.md`       |
-| `@spec-protocol-dor`        | Decides readiness proportionally to risk                 |
-| `@spec-protocol-po`         | Generates co-specification with A/B decisions for the PO |
-| `@spec-protocol-revalidate` | Revalidates PO responses and closes gaps                 |
-| `@spec-protocol-plan`       | Generates/refines `plan.md` and `tasks.md`               |
-| `@spec-protocol-exception`  | Records formal bypass with accepted risk                 |
-
+| Skill                       | Purpose                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| `@spec-protocol-triage`     | Classifies work type, risk, and recommended flow                 |
+| `@spec-protocol-analyze`    | Cross-checks card and codebase to update `spec.md`               |
+| `@spec-protocol-dor`        | Decides readiness proportionally to risk                         |
+| `@spec-protocol-po`         | Generates co-specification with A/B decisions for the PO         |
+| `@spec-protocol-revalidate` | Revalidates PO responses and closes gaps                         |
+| `@spec-protocol-plan`       | Generates/refines `plan.md` and `tasks.md`                       |
+| `@spec-protocol-exception`  | Records formal bypass with accepted risk                         |
+| `@spec-protocol-help`       | Spec Protocol IDE onboarding (flow, skills, CLI) — repository only |
 
 ### AISP conventions
 
@@ -225,7 +229,7 @@ Use a single taxonomy across all artifacts (English canonical; PT aliases accept
    Creates spec.md, plan.md, and tasks.md for the task
 
 3. IDE + Spec Protocol skills
-   Start with @spec-protocol-triage and follow the risk-based flow
+   Start with @spec-protocol-triage; use @spec-protocol-help for a full flow overview
 
 4. spec-protocol export
    Generates spec-kit-input.md from the artifacts
@@ -254,9 +258,9 @@ yarn global add spec-protocol-cli
 
 The CLI executable is `spec-protocol`.
 
-
 | Command                                                     | Description                                                     |
 | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| `spec-protocol` or `spec-protocol --help`                   | Lists subcommands and options (Commander help)                  |
 | `spec-protocol init [--no-gitignore]`                       | Initializes `.spec-protocol/` and installs Spec Protocol skills |
 | `spec-protocol new <task-id>`                               | Creates `spec.md`, `plan.md`, and `tasks.md`                    |
 | `spec-protocol list`                                        | Lists tasks and artifact progress                               |
@@ -267,7 +271,6 @@ The CLI executable is `spec-protocol`.
 | `spec-protocol export <task-id>`                            | Generates `spec-kit-input.md`                                   |
 | `spec-protocol run-spec <task-id>`                          | Runs Spec-Kit with the generated export                         |
 | `spec-protocol doctor`                                      | Runs a health check for protocol, skills, and templates         |
-
 
 ### Configuration
 
@@ -297,7 +300,7 @@ After `init`, the CLI creates `.spec-protocol/config.json`:
 
 ### Upgrade (2.0.0+)
 
-- Reinstall: `npm install -g spec-protocol-cli@2.0.0`
+- Reinstall: `npm install -g spec-protocol-cli@2.0.1`
 - Run `spec-protocol init` to install `spec-protocol-*` skills (replace legacy `rta-*`).
 - Recreate tasks with old headings/tags if `validate` fails; PT aliases still accepted in 2.0.0.
 - Legacy `config.language` field is ignored.
@@ -326,161 +329,10 @@ After `npm link`, the local binary is available as `spec-protocol`.
 
 This project is licensed under the [MIT License](LICENSE).
 
----
+### Project governance
 
-## Español
-
-### AISP - AI Spec Protocol / AI-Assisted Technical Refinement
-
-El flujo **AISP (AI Spec Protocol / AI-Assisted Technical Refinement)** es el refinamiento técnico asistido por IA guiado por el **AI Spec Protocol**. Ayuda a equipos de software a reducir incertidumbre antes de la implementación mediante skills de IA y artefactos versionables dentro del repositorio.
-
-La CLI prepara el proyecto para trabajar con `spec.md`, `plan.md` y `tasks.md`, y instala las skills Spec Protocol en `.agents/skills/`.
-
-### Funcionalidades principales
-
-- **Skills AISP en la IDE**: pack instalado en `.agents/skills/` para Cursor, Antigravity y herramientas compatibles.
-- **Artefactos del protocolo**: `spec.md`, `plan.md` y `tasks.md` en `.spec-protocol/tasks/<ID>/`.
-- **Validación CI**: `validate` exige `spec.md` y `plan.md` completos antes del export.
-- **Puente con Spec-Kit**: `export` consolida artefactos en `spec-kit-input.md`.
-- **Seguro por diseño**: `spawn`/`execFile` sin ejecución arbitraria de shell.
-
-### Skills instaladas
-
-
-| Skill                       | Función                                               |
-| --------------------------- | ----------------------------------------------------- |
-| `@spec-protocol-triage`     | Clasifica tipo de trabajo, riesgo y flujo recomendado |
-| `@spec-protocol-analyze`    | Cruza card y codebase para actualizar `spec.md`       |
-| `@spec-protocol-dor`        | Decide preparación proporcional al riesgo             |
-| `@spec-protocol-po`         | Genera coespecificación con decisiones A/B para el PO |
-| `@spec-protocol-revalidate` | Revalida respuestas del PO y cierra brechas           |
-| `@spec-protocol-plan`       | Genera/refina `plan.md` y `tasks.md`                  |
-| `@spec-protocol-exception`  | Registra bypass formal con riesgo aceptado            |
-
-
-### Convenciones AISP
-
-`@spec-protocol-triage` es el punto de entrada principal. Clasifica tipo de trabajo y riesgo; las demandas de bajo riesgo solo saltan a `@spec-protocol-plan` cuando tienen objetivo claro, alcance delimitado, criterio testeable y ninguna decisión `[CRITICAL]` pendiente.
-
-Use una taxonomía única en todos los artefactos (inglés canónico; aliases PT aceptados por `validate` en 2.0.0):
-
-- `[CRITICAL]`: bloquea inicio o puede cambiar alcance/solución.
-- `[RISK]`: puede generar efecto colateral relevante.
-- `[HYPOTHESIS]`: inferencia sin evidencia directa.
-- `[OBSERVATION]`: útil, pero no bloquea.
-
-`EXCEPTION APPROVED` solo es válida cuando `@spec-protocol-exception` registra motivo, riesgos aceptados, responsable de la decisión y revisión post-entrega.
-
-### Flujo de trabajo
-
-```text
-1. spec-protocol init
-   Crea .spec-protocol/ y instala .agents/skills/spec-protocol-*
-
-2. spec-protocol new JIRA-123
-   Crea spec.md, plan.md y tasks.md para la demanda
-
-3. IDE + skills Spec Protocol
-   Use @spec-protocol-triage como entrada y siga el flujo por riesgo
-
-4. spec-protocol export
-   Genera spec-kit-input.md a partir de los artefactos
-
-5. spec-protocol run-spec JIRA-123
-   Ejecuta Spec-Kit con spec-kit-input.md
-```
-
-### Instalación
-
-Ejecute directamente:
-
-```bash
-npx spec-protocol-cli init
-yarn dlx spec-protocol-cli init
-```
-
-O instale globalmente:
-
-```bash
-npm install -g spec-protocol-cli
-yarn global add spec-protocol-cli
-```
-
-### Referencia rápida de comandos
-
-El ejecutable de la CLI es `spec-protocol`.
-
-
-| Comando                                                     | Descripción                                                 |
-| ----------------------------------------------------------- | ----------------------------------------------------------- |
-| `spec-protocol init [--no-gitignore]`                       | Inicializa `.spec-protocol/` e instala skills Spec Protocol |
-| `spec-protocol new <task-id>`                               | Crea `spec.md`, `plan.md` y `tasks.md`                      |
-| `spec-protocol list`                                        | Lista demandas y progreso de artefactos                     |
-| `spec-protocol status <task-id>`                            | Muestra estado de completitud de los artefactos             |
-| `spec-protocol context <task-id>`                           | Muestra guía AISP y skills sugeridas para la IDE             |
-| `spec-protocol open <task-id> [--artifact spec,plan,tasks]` | Abre un artefacto en el editor                              |
-| `spec-protocol validate <task-id>`                          | Valida artefactos críticos para CI                          |
-| `spec-protocol export <task-id>`                            | Genera `spec-kit-input.md`                                  |
-| `spec-protocol run-spec <task-id>`                          | Ejecuta Spec-Kit con el export generado                     |
-| `spec-protocol doctor`                                      | Ejecuta health check de protocolo, skills y templates       |
-
-
-### Configuración
-
-Después de `init`, la CLI crea `.spec-protocol/config.json`:
-
-```json
-{
-  "squad": "Nombre del equipo",
-  "ide": "Cursor",
-  "specKit": {
-    "command": "specify",
-    "args": []
-  },
-  "createdAt": "2026-05-24T22:00:00.000Z"
-}
-```
-
-- `squad`: equipo responsable por las especificaciones generadas.
-- `ide`: editor preferido (`Cursor`, `VS Code`, `JetBrains`, `Other`).
-- `specKit`: ejecutable y argumentos para ejecutar Spec-Kit.
-
-### Taxonomía y locale
-
-- CLI, templates y `validate` usan taxonomía **en inglés** (`[CRITICAL]`, `READY`, headings EN).
-- El idioma del chat con el usuario lo decide el agente en la IDE; la CLI no persiste locale.
-- Nombres técnicos: `spec.md`, `plan.md`, `tasks.md`, `@spec-protocol-`*.
-
-### Actualización (2.0.0+)
-
-- Reinstale: `npm install -g spec-protocol-cli@2.0.0`
-- Ejecute `spec-protocol init` para instalar skills `spec-protocol-*` (reemplazan `rta-*` legadas).
-- Recree tareas con headings/tags antiguos si `validate` falla; aliases PT aún aceptados en 2.0.0.
-- Campo `config.language` legado se ignora.
-- Valide con `spec-protocol doctor`.
-- **No soportado:** tareas con subcarpetas `artifacts/` y `answers/`. Recree con `spec-protocol new <ID>`.
-
-### Desarrollo local
-
-```bash
-git clone https://github.com/spec-protocol/spec-protocol-cli.git
-cd spec-protocol-cli
-npm install
-npm run build
-npm link
-```
-
-Después de `npm link`, el binario local queda disponible como `spec-protocol`.
-
-### Seguridad
-
-- **Whitelist de archivos**: el paquete npm publica `dist/`, `templates/`, skills Spec Protocol en `.agents/skills/spec-protocol-*/`, `README.md` y `LICENSE`.
-- **Prevención de ejecución de shell**: las llamadas a procesos hijos usan arrays de argumentos y `shell: false`.
-- **Auditoría**: las dependencias deben verificarse con `npm audit` antes de publicar.
-
-### Licencia
-
-Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
+- [Versioning policy](VERSIONING.md)
+- [How to contribute](CONTRIBUTING.md)
 
 ---
 
@@ -490,4 +342,3 @@ Este projeto é licenciado sob os termos da **Licença MIT**.
 
 > **AVISO DE ISENÇÃO DE RESPONSABILIDADE**:
 > O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM QUALQUER TIPO DE GARANTIA, EXPRESSA OU IMPLÍCITA. EM NENHUMA CIRCUNSTÂNCIA OS AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO, DANOS OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA, DECORRENTE DE, OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO SOFTWARE.
-
