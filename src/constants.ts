@@ -44,6 +44,7 @@ export const ARTIFACTS: ArtifactDefinition[] = [
 
 /** Skills installed in .agents/skills by init */
 export const SPEC_PROTOCOL_SKILL_DIRS = [
+  "spec-protocol-help",
   "spec-protocol-triage",
   "spec-protocol-analyze",
   "spec-protocol-dor",

@@ -32,7 +32,7 @@ Com a CLI, você prepara o projeto para trabalhar com `spec.md`, `plan.md` e `ta
 
 ### Skills instaladas
 
-O comando `spec-protocol init` instala **sete** skills no pack npm. A skill `@spec-protocol-help` existe neste repositório para onboarding na IDE e **não** é copiada pelo `init`.
+O comando `spec-protocol init` instala **sete** skills no pack npm.
 
 | Skill                       | Função                                                          |
 | --------------------------- | --------------------------------------------------------------- |
@@ -43,7 +43,7 @@ O comando `spec-protocol init` instala **sete** skills no pack npm. A skill `@sp
 | `@spec-protocol-revalidate` | Revalida respostas do PO e fecha lacunas                        |
 | `@spec-protocol-plan`       | Gera/refina `plan.md` e `tasks.md`                              |
 | `@spec-protocol-exception`  | Registra bypass formal com risco aceito                         |
-| `@spec-protocol-help`       | Onboarding do Spec Protocol na IDE (fluxo, skills, CLI) — só no repo |
+| `@spec-protocol-help`       | Onboarding do Spec Protocol na IDE (fluxo, skills, CLI)              |
 
 ### Convenções AISP
 
@@ -193,7 +193,7 @@ The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`,
 
 ### Installed skills
 
-`spec-protocol init` installs **seven** skills from the npm pack. `@spec-protocol-help` lives in this repository for IDE onboarding and is **not** copied by `init`.
+`spec-protocol init` installs **seven** skills from the npm pack.
 
 | Skill                       | Purpose                                                          |
 | --------------------------- | ---------------------------------------------------------------- |
@@ -204,7 +204,7 @@ The CLI prepares your project to work with `spec.md`, `plan.md`, and `tasks.md`,
 | `@spec-protocol-revalidate` | Revalidates PO responses and closes gaps                         |
 | `@spec-protocol-plan`       | Generates/refines `plan.md` and `tasks.md`                       |
 | `@spec-protocol-exception`  | Records formal bypass with accepted risk                         |
-| `@spec-protocol-help`       | Spec Protocol IDE onboarding (flow, skills, CLI) — repository only |
+| `@spec-protocol-help`       | Spec Protocol IDE onboarding (flow, skills, CLI)                     |
 
 ### AISP conventions
 
